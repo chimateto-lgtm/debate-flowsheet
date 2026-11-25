@@ -266,6 +266,30 @@ button.late{font:inherit;font-size:10px;font-weight:700;cursor:pointer}
 .fmtwarn{margin-top:8px;padding:6px 9px;border-radius:5px;background:var(--warn-bg);color:var(--warn-ink);font-size:12px}
 @media (max-width:640px){.fgrid.fb4{grid-template-columns:1fr 1fr}}
 @media (max-width:640px){.fgrid,.kcols{grid-template-columns:1fr}}
+
+/* ---- help ---- */
+.dlg.dlg-help{width:min(820px,100%)}
+.htabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:4px 0 2px;position:sticky;top:0;background:var(--surface);z-index:1;padding-top:6px}
+.htab{border:0;background:none;padding:7px 14px;font-weight:700;font-size:13px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.htab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.hpanel{padding-top:4px}
+.kgroup{padding:12px 0;border-bottom:1px solid var(--line)}
+.kgroup:last-child{border-bottom:0}
+.kgroup h3{margin:0 0 8px;font-size:12.5px;color:var(--ink)}
+.krow{display:grid;grid-template-columns:minmax(150px,210px) 1fr;gap:4px 16px;padding:5px 0;border-top:1px dashed var(--line);align-items:baseline}
+.krow:first-of-type{border-top:0}
+.kkeys{font-size:12px;color:var(--muted);line-height:1.9}
+.kdesc{font-size:12.5px;line-height:1.55;max-width:60ch}
+.kplus{margin:0 2px;color:var(--muted);font-size:10px}
+.hlist{margin:0 0 8px;padding-left:1.2em;font-size:12.5px;line-height:1.7}
+.steps{margin:0;padding-left:1.4em;font-size:12.5px;line-height:1.8}
+.steps li{padding-left:2px}
+.legend2,.chiprow{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12px;color:var(--muted)}
+.legend2>span,.chiprow>span{display:inline-flex;align-items:center;gap:6px}
+.tagx{font-family:var(--font-mono);font-weight:600;font-size:11.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:3px;padding:0 4px}
+.rulecard{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:6px 0}
+.rulecard p,.hp{margin:0;font-size:12.5px;line-height:1.6;max-width:62ch}
+@media (max-width:560px){.krow{grid-template-columns:1fr}}
 @media (prefers-reduced-motion: reduce){#toast{transition:none}}
 </style>
 </head>
@@ -286,7 +310,7 @@ button.late{font:inherit;font-size:10px;font-weight:700;cursor:pointer}
     <button id="btnRedo" class="btn icon" title="やり直す (Ctrl+Shift+Z)" aria-label="やり直す">↷</button>
     <button id="btnRound" class="btn">試合設定</button>
     <button id="btnView" class="btn">表示・保存</button>
-    <button id="btnHelp" class="btn icon" title="ショートカット一覧 (?)" aria-label="ショートカット一覧">?</button>
+    <button id="btnHelp" class="btn icon" title="使い方とキー操作 (?)" aria-label="使い方とキー操作">?</button>
   </div>
 </header>
 <div class="strip">
@@ -1585,27 +1609,112 @@ function importJSON(text){
   S.curId=last.id;stopRun();timerReset();ui.sel=null;saveSettings();closeDlg();toast(`${n}件の試合を読み込みました`);
 }
 function openHelp(){
-  const K=(a,b)=>`<dt>${a}</dt><dd>${b}</dd>`;
-  openDlg('使い方とショートカット',`<section><h3>見方</h3><div class="row" style="gap:16px;font-size:12px">
-    <span><span class="sb aff">肯</span> 肯定側（四角・青）</span><span><span class="sb neg">否</span> 否定側（丸・オレンジ）</span>
-    <span><svg width="30" height="10" aria-hidden="true"><path d="M1 5 H24" stroke="currentColor" stroke-width="1.6"/><path d="M23 1 L29 5 L23 9 z" fill="currentColor"/></svg> 反論・延長</span>
-    <span><svg width="30" height="10" aria-hidden="true"><path d="M1 5 H28" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4"/></svg> クロスアプライ</span>
-    <span><span class="drop">! 未反論</span> 相手が答えていない</span>
-    <span><span class="late">レイト</span> 答える機会のあった反駁で答えず、後の反駁で出した遅い反論（反論された自分の論点を後から立て直す延長も含む。薄い取り消し線付き）。審査員が認めなかった場合は、カードをクリックして印の「× 取り消す」を押す</span></div>
-    <p class="note">カードの番号「肯1-2·否a」は「肯1-2 への否定側の a 番目」。前半の「肯1-2」を押すと反論先へ移ります。</p></section>
-  <section><h3>基本の流れ</h3><p style="margin:0">列がスピーチ（左から時系列）、横の帯が1つの論点です。反論は反論先と同じ高さに置かれ、矢印でつながります。カード上部の「→ 肯1-2 …」が反論先、色と記号（肯＝四角、否＝丸）が側を示します。<br>スピーチが始まったら列見出し（または <kbd>]</kbd>）で「現在のスピーチ」を切り替えます。新しいカードは現在のスピーチの列にだけ入るので、反駁中に誤って立論の列へ書き込むことはありません。<br>過去のスピーチのカードはクリックすると修正でき、<kbd>Esc</kbd> で現在のスピーチの記入に戻ります。</p></section>
-  <section><h3>書く（カードを選んでいるとき）</h3><div class="kcols"><dl class="keys">
-    ${K('<kbd>；</kbd> / <kbd>＋</kbd>（何も選んでいなければ <kbd>Shift</kbd>+<kbd>矢印</kbd> でも可）','立論・質疑：現在のスピーチに新しい論点。反駁：一番上の論点への反駁をすぐ書き始める（現在のスピーチでまだ書いていない一番上の行の、相手側の最も新しいスピーチの論点）。反駁先は <kbd>Shift</kbd>+<kbd>矢印</kbd> で変えられ、空のまま通り過ぎた反駁は消える')}${K('<kbd>Shift</kbd>+<kbd>G</kbd>','立論で現状分析を追加（全論点より上に置かれる。番号は「肯現」「否現」、未反論の表示や反駁先の自動選択からは外れる）。カードを書いている途中は通常の「G」入力になるので、Esc で確定してから押す')}${K('<kbd>R</kbd>','選んだカードに反論（現在のスピーチの列に入る。現在のスピーチより前の論点のみ）')}${K('<kbd>S</kbd>','選んだカードの下位論点')}${K('クリック / <kbd>Enter</kbd> / <kbd>F2</kbd>','書き直す。過去のスピーチのカードは「修正中」になり、<kbd>Esc</kbd> で現在のスピーチの記入に戻る（新しいカードは現在のスピーチにだけ追加される）')}
-  </dl><dl class="keys">
-    ${K('<kbd>L</kbd>','クロスアプライ（別の論点にも適用）')}${K('<kbd>P</kbd>','反論先を付け替える')}${K('<kbd>*</kbd> / <kbd>Q</kbd>','重要マーク')}${K('<kbd>X</kbd>','放棄・譲歩として薄く表示')}${K('<kbd>Shift</kbd>+<kbd>Delete</kbd>（Mac は <kbd>Shift</kbd>+<kbd>fn</kbd>+<kbd>delete</kbd>）','削除（下位・反論ごと。Ctrl+Z で戻せる）')}
-  </dl></div></section>
-  <section><h3>入力中</h3><dl class="keys">${K('<kbd>Enter</kbd>','改行')}${K('<kbd>Esc</kbd> / 枠の外をクリック','確定（空のカードは消える）')}${K('<kbd>Ctrl</kbd>+<kbd>Enter</kbd>（Mac は <kbd>⌘</kbd>+<kbd>Enter</kbd>）','確定して、同じ階層に次のカード（同じ反論先への2つ目の反論など）')}${K('<kbd>↑↓←→</kbd>','文中のカーソル移動（ふつうの文字入力と同じ）')}${K('<kbd>Shift</kbd>+<kbd>矢印</kbd>（反駁を書いているとき）','反駁先の論点を矢印の方向へ変える。↑↓ は一つ上／下の行（論点の流れ）の相手の最も新しい議論へ、←→ は同じ行の中で反論先／反論へ。書きかけで空の反駁は通り過ぎた時点で消え、書いた反駁は残る。行き先にこのスピーチの反駁がすでにあれば、それを書き直す')}${K('<kbd>Shift</kbd>+<kbd>↑↓</kbd>（論点・下位論点を書いているとき）','上下のカードの入力へ移る。いちばん下で <kbd>Shift</kbd>+<kbd>↓</kbd> を押すと、同じ階層に次のカードを追加')}${K('<kbd>Shift</kbd>+<kbd>Delete</kbd>','書いているカードをすぐに消す（下位・反論ごと。<kbd>Ctrl</kbd>+<kbd>Z</kbd> で戻せる。Mac は <kbd>Shift</kbd>+<kbd>fn</kbd>+<kbd>delete</kbd>）。<kbd>Delete</kbd> だけなら通常の文字削除')}${K('<kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>','すぐ上のカードの下位へ／ひとつ上の階層へ')}</dl><p class="note">日本語の変換中のキーは、どれも確定や移動に使われません。</p></section>
-  <section><h3>動く・見る</h3><div class="kcols"><dl class="keys">
-    ${K('<kbd>Shift</kbd>+<kbd>↑↓</kbd>','同じ列の上下へ。いちばん下で <kbd>Shift</kbd>+<kbd>↓</kbd> を押すと新しいカードを追加（反駁なら、反駁先の一つ下の論点への反駁）')}${K('<kbd>Shift</kbd>+<kbd>→</kbd>','このカードへの反論へ（なければ右の列）')}${K('<kbd>Shift</kbd>+<kbd>←</kbd>','反論先へ（なければ左の列）')}${K('矢印のみ','移動だけ（追加はしない）')}${K('<kbd>Alt</kbd>+<kbd>↑↓</kbd>','カードを同じ階層で並べ替え')}${K('<kbd>Alt</kbd>+<kbd>←→</kbd>','カードを隣のスピーチ列へ移す')}
-  </dl><dl class="keys">
-    ${K('<kbd>[</kbd> <kbd>]</kbd> / <kbd>1</kbd>〜<kbd>9</kbd>','現在のスピーチを切替')}${K('<kbd>Space</kbd>','スピーチタイマー開始・停止')}${K('<kbd>D</kbd>','次の未反論カードへ')}${K('<kbd>F</kbd>','論点フォーカス（選んだ帯だけ強調）')}${K('<kbd>Ctrl</kbd>+<kbd>Z</kbd>','元に戻す（<kbd>Shift</kbd> 併用でやり直し）')}${K('<kbd>Esc</kbd>','選択・モードの解除')}${K('質疑','試合の順番とタイマーには入るが、ふだんはメモしない。その間は質問されている立論（否定側質疑なら肯定側立論、肯定側質疑なら否定側立論）に書き足せる。質疑そのものをメモしたい試合は「表示」または試合形式の「質疑のメモ」で「メモする」にする')}${K('<kbd>Ctrl</kbd>/<kbd>⌘</kbd>＋ホイール、ピンチ','フローの拡大・縮小（カーソルの位置を中心に。100%〜250%）。「−／＋」ボタンでも可')}${K('何もない所をドラッグ','フローを上下左右に動かす（中ボタンのドラッグはどこでも可）。ホイールで上下、<kbd>Shift</kbd>＋ホイールで左右')}
-  </dl></div></section>
-  <section><h3>番号と種類</h3><p style="margin:0">論点は「肯1」「否1」、下位は「肯1-2」、反論は「肯1·否a」（肯1への否定側の a 番目）と付きます。種類は 論点／下位／反論／再反論／延長（同じ側が後のスピーチで伸ばす）／質疑 を自動で判定します。<br>「未反論」は、そのカードより後の相手側スピーチ（質疑を除く）が始まっているのに、相手がまだ答えていないカードに付きます。下位論点のどれか、または親の論点に反論があれば答えたものとみなします。</p></section>`);
+  const mac=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent);
+  const C=mac?'⌘':'Ctrl';
+  const k=(...ks)=>ks.map(x=>`<kbd>${x}</kbd>`).join('<span class="kplus">＋</span>');
+  const row=(keys,desc)=>`<div class="krow"><div class="kkeys">${keys}</div><div class="kdesc">${desc}</div></div>`;
+  const group=(title,rows,note)=>`<section class="kgroup"><h3>${title}</h3>${rows.join('')}${note?`<p class="note">${note}</p>`:''}</section>`;
+  const tabs=[
+   ['start','はじめに',`
+    <section class="kgroup"><h3>画面の見方</h3>
+      <ul class="hlist">
+        <li>列はスピーチ（左から時間順）、横の帯は1つの論点です。</li>
+        <li>反論は反論先と同じ高さに置かれ、線でつながります。</li>
+        <li>上の行の「現在のスピーチ」が、いま書き込む列です。列見出しに「現在」と出ます。</li>
+      </ul>
+      <div class="legend2">
+        <span><span class="sb aff">肯</span>肯定側（四角・青）</span>
+        <span><span class="sb neg">否</span>否定側（丸・オレンジ）</span>
+        <span><svg width="30" height="10" aria-hidden="true"><path d="M1 5 H24" stroke="currentColor" stroke-width="1.6"/><path d="M23 1 L29 5 L23 9 z" fill="currentColor"/></svg>反論・延長</span>
+        <span><svg width="30" height="10" aria-hidden="true"><path d="M1 5 H28" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4"/></svg>クロスアプライ</span>
+      </div>
+    </section>
+    <section class="kgroup"><h3>試合の流れ</h3>
+      <ol class="steps">
+        <li><b>試合を作る</b>：上の欄の「＋ 新しい試合」→「ゼミ形式」→「作成する」。</li>
+        <li><b>スピーチを進める</b>：${k('[')} ${k(']')} か ◀ ▶ で「現在のスピーチ」を切り替え、${k('Space')} でタイマー。</li>
+        <li><b>立論を書く</b>：${k('＋')} か ${k('；')} で論点を追加。${k('Shift','G')} で現状分析。質疑の時間中も、質問されている立論に書き足せます。</li>
+        <li><b>反駁を書く</b>：${k('＋')} で一番上の論点への反駁が始まり、${k('Shift','矢印')} で反駁先を変えます。</li>
+        <li><b>あとで直す</b>：カードをクリックすると書き直せます。${k('Esc')} で現在のスピーチに戻ります。</li>
+        <li><b>残す</b>：「表示」→「JSON（バックアップ）を保存」。</li>
+      </ol>
+    </section>`],
+   ['keys','キー操作',`
+    ${group('書き始める（何も書いていないとき）',[
+      row(`${k('＋')} / ${k('；')} / ${k('Shift','矢印')}`,'現在のスピーチで書き始める。立論では新しい論点、反駁では一番上の論点への反駁'),
+      row(k('Shift','G'),'現状分析を追加（立論のみ。全論点より上に置かれる）'),
+    ])}
+    ${group('書いている途中',[
+      row(k('Enter'),'改行'),
+      row(k('Esc'),'確定する（空のカードは消える）'),
+      row(k(C,'Enter'),'確定して、同じ階層に次のカード'),
+      row(`${k('Tab')} / ${k('Shift','Tab')}`,'下位論点にする／一つ上の階層に戻す'),
+      row(k('Shift','↑↓←→'),'反駁を書いているとき：反駁先の論点を矢印の方向へ変える（空のまま通り過ぎた反駁は消える）<br>論点を書いているとき：上下のカードへ移る（いちばん下の ↓ は追加）'),
+      row(k('Shift','Delete'),'書いているカードを消す（下位・反論ごと）'),
+    ],'日本語の変換中は、どのキーも確定や移動に使われません。')}
+    ${group('カードを選んでいるとき',[
+      row(k('R'),'このカードに反論する（現在のスピーチの列に入る）'),
+      row(k('S'),'下位論点を追加'),
+      row(`クリック / ${k('Enter')} / ${k('F2')}`,'書き直す'),
+      row(k('L'),'クロスアプライ（別の論点にも当てはめる）'),
+      row(k('P'),'反論先を付け替える'),
+      row(`${k('*')} / ${k('Q')}`,'重要マーク'),
+      row(k('X'),'放棄・譲歩として薄く表示'),
+      row(k('Shift','Delete'),'削除（下位・反論ごと）'),
+    ])}
+    ${group('移動・並べ替え',[
+      row(k('Shift','↑↓'),'同じ列の上下へ（いちばん下の ↓ は追加）。矢印だけなら移動のみ'),
+      row(k('Shift','←→'),'反論先へ／このカードへの反論へ'),
+      row(k('Alt','↑↓'),'同じ階層の中で並べ替え'),
+      row(k('Alt','←→'),'隣のスピーチの列へ移す'),
+    ])}
+    ${group('試合・表示',[
+      row(`${k('[')} ${k(']')} / ${k('1')}〜${k('9')}`,'現在のスピーチを切り替え'),
+      row(k('Space'),'スピーチのタイマーを開始・停止'),
+      row(k('D'),'次の未反論カードへ'),
+      row(k('F'),'論点フォーカス（選んだ論点の帯だけ強調）'),
+      row(`${k(C,'Z')} / ${k(C,'Shift','Z')}`,'元に戻す／やり直す'),
+      row(k('Esc'),'選択の解除（過去のスピーチを選んでいるときは現在のスピーチに戻る）'),
+      row(`${k(C)}＋ホイール、ピンチ`,'拡大・縮小（100〜250%）。「− ＋」ボタンでも可'),
+      row('何もない所をドラッグ','表示を上下左右に動かす。ホイールで上下、Shift＋ホイールで左右'),
+    ])}`],
+   ['rules','番号・判定',`
+    <section class="kgroup"><h3>番号の読み方</h3>
+      <ul class="hlist">
+        <li><span class="tagx">肯1</span> 論点、<span class="tagx">肯1-2</span> 下位論点、<span class="tagx">肯現</span> 現状分析。</li>
+        <li><span class="tagx">肯1-2·否a</span> は「肯1-2 への否定側の a 番目」。前半の「肯1-2」を押すと反論先へ移ります。</li>
+      </ul>
+    </section>
+    <section class="kgroup"><h3>種類の表示</h3>
+      <div class="chiprow">
+        <span><span class="kind k-反論">反論</span>相手への反論</span>
+        <span><span class="kind k-再反論">再反論</span>反論への反論</span>
+        <span><span class="kind k-延長">延長</span>自分の議論を伸ばす</span>
+        <span><span class="kind k-現状分析">現状分析</span>立論の前提</span>
+        <span><span class="kind k-新論点">新論点</span>反駁で新しく出た論点</span>
+      </div>
+    </section>
+    <section class="kgroup"><h3>未反論とレイト</h3>
+      <div class="rulecard"><span class="drop">! 未反論</span>
+        <p>相手側の後のスピーチ（質疑を除く）が始まったのに、相手がまだ答えていないカード。親の論点や下位論点への返答も「答えた」とみなします。</p></div>
+      <div class="rulecard"><span class="late">レイト</span>
+        <p>答える機会のあった反駁で答えず、後の反駁で初めて答えた反論・立て直し。印は遅れたカードだけに付き、本文に薄い取り消し線が入ります。審査員が認めなかった場合は、カードをクリックして印の「× 取り消す」を押します。</p></div>
+    </section>
+    <section class="kgroup"><h3>質疑</h3>
+      <p class="hp">質疑は順番とタイマーには入りますが、ふだんはメモしません。その間は質問されている立論に書き足せます。質疑そのものをメモしたい試合は、「表示」か試合形式の「質疑のメモ」で「メモする」にします。</p>
+    </section>`]
+  ];
+  const cur=ui.helpTab&&tabs.some(t=>t[0]===ui.helpTab)?ui.helpTab:'start';
+  openDlg('使い方',`<div class="htabs" role="tablist">${tabs.map(t=>`<button type="button" role="tab" class="htab" data-tab="${t[0]}" aria-selected="${t[0]===cur}">${t[1]}</button>`).join('')}</div>
+    ${tabs.map(t=>`<div class="hpanel" data-panel="${t[0]}"${t[0]===cur?'':' hidden'}>${t[2]}</div>`).join('')}`,b=>{
+    b.closest('.dlg').classList.add('dlg-help');
+    b.querySelectorAll('.htab').forEach(btn=>btn.onclick=()=>{
+      ui.helpTab=btn.dataset.tab;
+      b.querySelectorAll('.htab').forEach(x=>x.setAttribute('aria-selected',String(x===btn)));
+      b.querySelectorAll('.hpanel').forEach(p=>p.hidden=p.dataset.panel!==btn.dataset.tab);
+      b.scrollTop=0;
+    });
+  });
 }
 
 /* ================= 保存 ================= */
