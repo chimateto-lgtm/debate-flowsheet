@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ディベート・フローシート</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* 列＝スピーチ（左→右の時系列）、横帯＝1つの論点。反論は反論先と同じ行に置き、線で結ぶ */
+  --bg:#edeff3;
+  --surface:#ffffff;
+  --surface-2:#f6f7f9;
+  --ink:#161a21;
+  --muted:#5a6372;
+  --line:#d5d9e0;
+  --line-strong:#aab1bd;
+  --aff:#1d55c4;
+  --aff-ink:#163f92;
+  --aff-tint:#edf3fd;
+  --aff-wash:rgba(29,85,196,.055);
+  --neg:#c4441d;
+  --neg-ink:#8c2f12;
+  --neg-tint:#fdf0ea;
+  --neg-wash:rgba(196,68,29,.055);
+  --warn-bg:#fde68a;
+  --warn-ink:#5c3608;
+  --focus:#6d3ae0;
+  --late-bg:#ede9fe;
+  --late-ink:#5b21b6;
+  --band-alt:rgba(20,30,50,.022);
+  --font-body:"BIZ UDPGothic","Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --colw:186px;
+  --fs:13px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111317; --surface:#1b1e24; --surface-2:#22262d; --ink:#e7e9ee; --muted:#9aa3b2;
+    --line:#323843; --line-strong:#4c5463;
+    --aff:#6c9bff; --aff-ink:#a9c4ff; --aff-tint:#1a2438; --aff-wash:rgba(108,155,255,.06);
+    --neg:#ff7b57; --neg-ink:#ffb39c; --neg-tint:#33201a; --neg-wash:rgba(255,123,87,.06);
+    --warn-bg:#e9c04a; --warn-ink:#2a1a00; --focus:#a78bfa; --late-bg:#2e2547; --late-ink:#c4b5fd; --band-alt:rgba(255,255,255,.025);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111317; --surface:#1b1e24; --surface-2:#22262d; --ink:#e7e9ee; --muted:#9aa3b2;
+  --line:#323843; --line-strong:#4c5463;
+  --aff:#6c9bff; --aff-ink:#a9c4ff; --aff-tint:#1a2438; --aff-wash:rgba(108,155,255,.06);
+  --neg:#ff7b57; --neg-ink:#ffb39c; --neg-tint:#33201a; --neg-wash:rgba(255,123,87,.06);
+  --warn-bg:#e9c04a; --warn-ink:#2a1a00; --focus:#a78bfa; --late-bg:#2e2547; --late-ink:#c4b5fd; --band-alt:rgba(255,255,255,.025);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:13px;line-height:1.5;display:flex;flex-direction:column;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:4px 10px;line-height:1.4;white-space:nowrap}
+.btn:hover{border-color:var(--line-strong);background:var(--surface-2)}
+.btn.icon{min-width:30px;padding:4px 7px;text-align:center}
+.btn.primary{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.btn.danger{color:#b42318;border-color:#e7b4ae}
+.btn:disabled{opacity:.4;cursor:default}
+kbd{font-family:var(--font-mono);font-size:10.5px;border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:4px;padding:0 4px;background:var(--surface);color:var(--muted)}
+
+/* ---- top ---- */
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;letter-spacing:.02em}
+.logo{display:inline-grid;grid-template-columns:8px 8px;gap:2px}
+.logo i{display:block;width:8px;height:16px;border-radius:2px}
+.logo .a{background:var(--aff)} .logo .n{background:var(--neg)}
+.roundpick{display:flex;gap:6px;align-items:center}
+.roundpick select{max-width:240px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:var(--surface)}
+.meta{flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:2px}
+.meta .motion{font-weight:700;text-wrap:balance}
+.meta .motion.empty{color:var(--muted);font-weight:400}
+.meta .teams{display:flex;gap:12px;color:var(--muted);font-size:12px;flex-wrap:wrap}
+.team{display:inline-flex;align-items:center;gap:5px}
+.tools{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ---- strip ---- */
+body.top-hidden .top{display:none}
+.topToggle{width:22px;height:22px;padding:0;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--muted);font-size:11px;line-height:1;flex:none}
+.topToggle:hover{color:var(--ink);border-color:var(--line-strong)}
+.strip{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:5px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.curbox{display:flex;align-items:center;gap:6px}
+.curname{display:flex;flex-direction:column;min-width:132px;line-height:1.2}
+.curname small{color:var(--muted);font-size:10.5px}
+.curname b{font-size:14px}
+.curname b.aff{color:var(--aff-ink)} .curname b.neg{color:var(--neg-ink)}
+.timer{display:flex;align-items:center;gap:6px}
+.tmval{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:19px;font-weight:600;min-width:84px;text-align:right;letter-spacing:.02em}
+.tmval.low{color:#b7791f}
+.tmval.over{color:#c0262d}
+.prep{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}
+.prepbtn{font-family:var(--font-mono);font-variant-numeric:tabular-nums;border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:3px 8px;display:inline-flex;gap:6px;align-items:center}
+.prepbtn .sb{width:16px;height:16px;font-size:10px}
+.prepbtn.run{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.prepbtn.over{color:#c0262d}
+.legend{display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.toggles{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap}
+.toggles label{display:inline-flex;align-items:center;gap:4px;font-size:12px;cursor:pointer}
+.dropjump{margin-left:auto}
+.zoomctl{display:inline-flex;gap:2px;align-items:center}
+.zoomctl #zVal{min-width:52px;font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:11.5px;padding:4px 4px}
+#scroller.panning,#scroller.panning *{cursor:grabbing!important}
+.dropjump b{font-family:var(--font-mono)}
+.dropjump.has{background:var(--warn-bg);color:var(--warn-ink);border-color:transparent;font-weight:700}
+
+/* side badge: 肯=四角, 否=丸（色以外でも区別） */
+.sb{display:inline-grid;place-items:center;width:18px;height:18px;flex:none;font-size:11px;font-weight:700;color:#fff;line-height:1}
+.sb.aff{background:var(--aff);border-radius:3px}
+.sb.neg{background:var(--neg);border-radius:50%}
+:root[data-theme="dark"] .sb{color:#111}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .sb{color:#111}}
+
+/* ---- flow grid ---- */
+#scroller{flex:1;overflow:auto;position:relative;background:var(--bg)}
+#grid{position:relative;display:grid;column-gap:26px;row-gap:6px;padding:0 20px 80px;width:max-content;min-width:100%;align-items:start}
+#wires{position:absolute;left:0;top:0;pointer-events:none;z-index:1;overflow:visible}
+.colwash{z-index:0;margin:0 -8px;align-self:stretch}
+.colwash.aff{background:var(--aff-wash)} .colwash.neg{background:var(--neg-wash)}
+.colwash.cx{background:repeating-linear-gradient(135deg,transparent 0 7px,var(--band-alt) 7px 9px)}
+.colwash.cur{box-shadow:inset 0 0 0 1px var(--line-strong)}
+.band{z-index:0;margin:-3px -20px;border-top:1px solid var(--line-strong);align-self:stretch;pointer-events:none}
+.band.odd{background:var(--band-alt)}
+.colhead{position:sticky;top:0;z-index:6;margin:0 -9px 4px;padding:5px 9px 4px;background:var(--surface);border-bottom:1px solid var(--line);border-top:3px solid transparent;display:flex;align-items:center;gap:6px;align-self:start}
+.colhead.aff{border-top-color:color-mix(in srgb,var(--aff) 35%,transparent)}
+.colhead.neg{border-top-color:color-mix(in srgb,var(--neg) 35%,transparent)}
+.colhead.cur.aff{border-top-color:var(--aff);background:var(--aff-tint)}
+.colhead.cur.neg{border-top-color:var(--neg);background:var(--neg-tint)}
+.ch-set{flex:1;min-width:0;display:flex;align-items:center;gap:7px;border:0;background:none;padding:0;text-align:left}
+.ch-t{display:flex;align-items:baseline;gap:6px;line-height:1.2;min-width:0;white-space:nowrap}
+.ch-t b{font-size:14px}
+.ch-t small{font-size:10.5px;color:var(--muted)}
+.colhead.aff .ch-t b{color:var(--aff-ink)} .colhead.neg .ch-t b{color:var(--neg-ink)}
+.ch-now{font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;background:var(--ink);color:var(--surface);margin-left:2px}
+.ch-add{border:1px solid var(--line);background:var(--surface);border-radius:5px;width:22px;height:22px;padding:0;font-size:15px;line-height:1}
+.ch-add:hover{border-color:var(--line-strong)}
+
+.card{position:relative;z-index:2;background:var(--surface);border:1px solid var(--line);border-left-width:4px;border-radius:5px;padding:3px 7px 4px 8px;font-size:var(--fs);line-height:1.3;margin-left:calc(var(--d,0) * 14px);min-width:0;cursor:default;user-select:none;-webkit-user-select:none}
+.card.aff{border-left-color:var(--aff);background:var(--aff-tint)}
+.card.neg{border-left-color:var(--neg);background:var(--neg-tint)}
+.card.cx{border-style:dashed;border-left-style:solid}
+.card.sel{outline:2px solid var(--focus);outline-offset:1px;z-index:3}
+.card.rel:not(.sel){box-shadow:0 0 0 2px color-mix(in srgb,var(--focus) 40%,transparent)}
+.card.dim{opacity:.25}
+.card.waive{opacity:.62}
+.card.waive .tx{text-decoration:line-through;text-decoration-color:var(--muted)}
+.ch{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:10.5px;line-height:1.3;margin-bottom:1px}
+.tag-p{border:0;background:none;padding:0;cursor:pointer;opacity:.75;text-decoration:underline dotted;text-underline-offset:2px}
+.tag-p:hover{opacity:1}
+.tag-p.aff{color:var(--aff-ink)!important} .tag-p.neg{color:var(--neg-ink)!important}
+.tag-s{font-weight:700}
+.tagw{display:inline-flex;align-items:baseline;flex-wrap:wrap;min-width:0}
+.tag{font-family:var(--font-mono);font-weight:600;font-size:11px;word-break:break-all}
+.card.aff .tag{color:var(--aff-ink)} .card.neg .tag{color:var(--neg-ink)}
+.kind{font-size:10px;padding:0 4px;border-radius:3px;border:1px solid currentColor;color:var(--muted);white-space:nowrap}
+.kind.k-反論,.kind.k-再反論{color:var(--ink);font-weight:700}
+.kind.k-現状分析{background:var(--ink);color:var(--surface);border-color:var(--ink);font-weight:700}
+.kind.k-新論点{background:var(--warn-bg);color:var(--warn-ink);border-color:transparent;font-weight:700}
+.card.nopick{opacity:.3}
+.star{color:#b7791f;font-size:12px}
+.late{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:0 5px;border-radius:3px;border:1px dashed var(--late-ink);color:var(--late-ink);background:var(--late-bg);white-space:nowrap;letter-spacing:.04em}
+.card.is-late .tx{text-decoration-line:line-through;text-decoration-color:color-mix(in srgb,var(--late-ink) 38%,transparent);text-decoration-thickness:1px}
+button.late{font:inherit;font-size:10px;font-weight:700;cursor:pointer}
+.late .late-x{display:none;margin-left:4px;font-weight:400}
+.card.sel .late .late-x{display:inline}
+.late.off{border-color:var(--line-strong);color:var(--muted);background:none;font-weight:400}
+.late.off .late-w{text-decoration:line-through}
+.drop{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:700;background:var(--warn-bg);color:var(--warn-ink);padding:0 5px;border-radius:3px;white-space:nowrap}
+.tx{white-space:pre-wrap;overflow-wrap:anywhere}
+.tx .lead{font-weight:700}
+.ph{color:var(--muted);font-style:italic}
+.ed{display:block;width:100%;resize:none;border:1px solid var(--focus);border-radius:4px;padding:3px 5px;background:var(--surface);line-height:1.3;font-size:var(--fs);overflow:hidden;min-height:2.2em;user-select:text;-webkit-user-select:text}
+.ed:focus{outline:none;box-shadow:0 0 0 2px color-mix(in srgb,var(--focus) 30%,transparent)}
+.links{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.lnk{font-family:var(--font-mono);font-size:10.5px;border:1px dashed var(--line-strong);border-radius:3px;background:none;padding:0 5px;color:var(--muted)}
+.lnk:hover{color:var(--ink)}
+.lnk-x{display:none;font-size:10px;border:0;background:none;color:var(--muted);padding:0 2px}
+.card.sel .lnk-x{display:inline}
+.acts{display:none;position:absolute;left:-1px;top:calc(100% + 2px);z-index:8;flex-wrap:wrap;gap:2px;padding:3px;background:var(--surface);border:1px solid var(--line-strong);border-radius:5px;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.card.sel:hover .acts{display:flex}
+.card.sel:hover{z-index:9}
+.acts button{font-size:10.5px;border:1px solid var(--line);background:var(--surface);border-radius:3px;padding:0 5px;line-height:1.6}
+.acts button:hover{border-color:var(--line-strong)}
+.acts kbd{font-size:9.5px;padding:0 3px}
+.acts .del{color:#b42318}
+#grid.picking .card{cursor:crosshair}
+#grid.picking .card:hover{outline:2px dashed var(--focus);outline-offset:1px}
+.empty-hint{grid-column:1 / -1;align-self:start;margin-top:28px;justify-self:start;max-width:560px;padding:14px 16px;border:1px dashed var(--line-strong);border-radius:8px;background:var(--surface);color:var(--muted);z-index:2;position:sticky;left:20px}
+.empty-hint b{color:var(--ink)}
+
+.w{fill:none;stroke-width:1.6;opacity:.7}
+.w.aff{stroke:var(--aff)} .w.neg{stroke:var(--neg)}
+.w.sub{stroke:var(--line-strong);stroke-width:1.3;opacity:1}
+.w.link{stroke-dasharray:5 4;stroke-width:1.4}
+.w.hot{stroke-width:2.8;opacity:1}
+#wires.has-hot .w:not(.hot){opacity:.18}
+
+/* ---- footer ---- */
+.status{display:flex;align-items:center;gap:12px;padding:3px 16px;background:var(--surface);border-top:1px solid var(--line);font-size:11px;color:var(--muted);min-height:26px}
+#hint{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hint kbd{margin:0 2px}
+#mode{display:none;align-items:center;gap:8px;font-weight:700;color:var(--ink);background:color-mix(in srgb,var(--focus) 14%,var(--surface));border:1px solid var(--focus);border-radius:5px;padding:2px 8px}
+#mode.on{display:inline-flex}
+#mode.fix{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-ink)}
+.card.fixing .ed{border-color:var(--warn-ink);box-shadow:0 0 0 2px var(--warn-bg)}
+.card.fixing::before{content:"修正中";position:absolute;top:-9px;right:8px;font-size:10px;font-weight:700;background:var(--warn-bg);color:var(--warn-ink);padding:0 5px;border-radius:3px}
+#save{white-space:nowrap}
+#save .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--line-strong);margin-right:5px;vertical-align:1px}
+#save.cloud .dot{background:#2f9e44} #save.saving .dot{background:#b7791f} #save.err .dot{background:#c0262d}
+
+#toast{position:fixed;left:50%;bottom:44px;transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:7px 14px;border-radius:6px;font-size:12.5px;z-index:50;opacity:0;pointer-events:none;transition:opacity .15s}
+#toast.on{opacity:1}
+
+/* ---- dialog ---- */
+#overlay{position:fixed;inset:0;background:rgba(10,14,22,.45);z-index:40;display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px;overflow:auto}
+#overlay[hidden]{display:none}
+.dlg{background:var(--surface);border:1px solid var(--line);border-radius:10px;width:min(760px,100%);box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.dlg-h{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line)}
+.dlg-h h2{margin:0;font-size:15px}
+.dlg-b{padding:4px 16px 16px;display:flex;flex-direction:column;gap:4px}
+.dlg-b section{padding:10px 0;border-bottom:1px solid var(--line)}
+.dlg-b section:last-child{border-bottom:0}
+.dlg-b h3{margin:0 0 8px;font-size:12.5px;color:var(--muted);font-weight:700}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.fgrid label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.fgrid .wide{grid-column:1 / -1}
+.fgrid input,.fgrid textarea,.fgrid select,.dlg-b input[type=number],.fmt input,.fmt select,.dlg-b textarea{border:1px solid var(--line);border-radius:5px;padding:5px 7px;background:var(--surface);color:var(--ink)}
+.fmt{width:100%;border-collapse:collapse;font-size:12px}
+.fmt th{text-align:left;font-weight:400;color:var(--muted);padding:3px 4px;border-bottom:1px solid var(--line)}
+.fmt td{padding:3px 4px;border-bottom:1px solid var(--line)}
+.fmt input{width:100%}
+.fmt .n{width:56px}
+.fmt td.ops{white-space:nowrap}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.note{color:var(--muted);font-size:11.5px;margin:6px 0 0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg label{padding:4px 10px;cursor:pointer;border-right:1px solid var(--line);font-size:12px}
+.seg label:last-child{border-right:0}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label:has(input:checked){background:var(--ink);color:var(--surface)}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:12.5px;align-items:baseline}
+.keys dt{white-space:nowrap;text-align:right}
+.keys dd{margin:0}
+.kcols{display:grid;grid-template-columns:1fr 1fr;gap:6px 28px}
+.fgrid.fb4{grid-template-columns:repeat(4,1fr)}
+.btn.qk{font-family:var(--font-mono);font-weight:600}
+.btn.qk-named{font-family:var(--font-body);background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.fbprev{margin-top:10px;font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.chip{display:inline-flex;align-items:baseline;gap:4px;padding:2px 7px;border-radius:4px;border-left:3px solid;font-size:12px;font-weight:700}
+.chip small{font-weight:400;color:var(--muted);font-family:var(--font-mono)}
+.chip.aff{border-left-color:var(--aff);background:var(--aff-tint);color:var(--aff-ink)}
+.chip.neg{border-left-color:var(--neg);background:var(--neg-tint);color:var(--neg-ink)}
+.chip.cx{border-left-style:dashed}
+.fmtwarn{margin-top:8px;padding:6px 9px;border-radius:5px;background:var(--warn-bg);color:var(--warn-ink);font-size:12px}
+@media (max-width:640px){.fgrid.fb4{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.fgrid,.kcols{grid-template-columns:1fr}}
+@media (prefers-reduced-motion: reduce){#toast{transition:none}}
+</style>
+</head>
+<body>
+<header class="top" id="topbar">
+  <div class="brand"><span class="logo" aria-hidden="true"><i class="a"></i><i class="n"></i></span><span>フローシート</span></div>
+  <div class="roundpick">
+    <label for="roundSel" class="sr">試合を選ぶ</label>
+    <select id="roundSel"></select>
+    <button id="btnNew" class="btn">＋ 新しい試合</button>
+  </div>
+  <div class="meta">
+    <div class="motion" id="mMotion"></div>
+    <div class="teams"><span class="team"><span class="sb aff">肯</span><span id="mAff"></span></span><span class="team"><span class="sb neg">否</span><span id="mNeg"></span></span></div>
+  </div>
+  <div class="tools">
+    <button id="btnUndo" class="btn icon" title="元に戻す (Ctrl+Z)" aria-label="元に戻す">↶</button>
+    <button id="btnRedo" class="btn icon" title="やり直す (Ctrl+Shift+Z)" aria-label="やり直す">↷</button>
+    <button id="btnRound" class="btn">試合設定</button>
+    <button id="btnView" class="btn">表示・保存</button>
+    <button id="btnHelp" class="btn icon" title="ショートカット一覧 (?)" aria-label="ショートカット一覧">?</button>
+  </div>
+</header>
+<div class="strip">
+  <button id="btnTop" class="topToggle" type="button" aria-controls="topbar" aria-expanded="true" title="上の欄（試合名・論題・設定）を隠す">▴</button>
+  <div class="curbox">
+    <button id="spPrev" class="btn icon" title="前のスピーチ ([)" aria-label="前のスピーチ">◀</button>
+    <div class="curname"><small id="curSmall">現在のスピーチ</small><b id="curName"></b></div>
+    <button id="spNext" class="btn icon" title="次のスピーチ (])" aria-label="次のスピーチ">▶</button>
+  </div>
+  <div class="timer">
+    <span class="tmval" id="tmVal">0:00</span>
+    <button id="tmGo" class="btn" title="スピーチタイマー (Space)">開始</button>
+    <button id="tmReset" class="btn">リセット</button>
+  </div>
+  <div class="prep">準備時間
+    <button id="prepAff" class="prepbtn" title="肯定側の準備時間を計る"><span class="sb aff">肯</span><span id="prepAffV">2:00</span></button>
+    <button id="prepNeg" class="prepbtn" title="否定側の準備時間を計る"><span class="sb neg">否</span><span id="prepNegV">2:00</span></button>
+  </div>
+  <button id="btnDrop" class="btn dropjump" title="次の未反論カードへ (D)">未反論 <b id="dropCnt">0</b> 件 ▸</button>
+  <span class="zoomctl" role="group" aria-label="フローの拡大・縮小">
+    <button id="zOut" class="btn icon" type="button" title="縮小（100% まで。Ctrl/⌘＋ホイール、トラックパッドのピンチでも可）" aria-label="縮小">−</button>
+    <button id="zVal" class="btn" type="button" title="100% に戻す">100%</button>
+    <button id="zIn" class="btn icon" type="button" title="拡大" aria-label="拡大">＋</button>
+  </span>
+  <button id="btnView2" class="btn" title="表示の切り替え（未反論・質疑の列・論点フォーカス）と保存">表示</button>
+</div>
+<main id="scroller"><div id="grid"></div></main>
+<footer class="status">
+  <span id="hint"></span>
+  <span id="mode"></span>
+  <span id="save"><span class="dot"></span><span id="saveTx">この端末に保存</span></span>
+</footer>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="overlay" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+    <div class="dlg-h"><h2 id="dlgTitle"></h2><button class="btn icon" id="dlgClose" aria-label="閉じる">×</button></div>
+    <div class="dlg-b" id="dlgBody"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ================= 基本 ================= */
+const $=(s,el=document)=>el.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-5);
+const validId=id=>typeof id==='string'&&/^[A-Za-z0-9_-]{1,60}$/.test(id);
+const SIDE_CH={aff:'肯',neg:'否'};
+const SIDE_NAME={aff:'肯定側',neg:'否定側'};
+const TYPE_NAME={const:'立論',cx:'質疑',reb:'反駁'};
+const LETTERS='abcdefghijklmnopqrstuvwxyz';
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const snip=(t,n)=>{t=String(t||'').replace(/\s+/g,' ').trim();return t.length>n?t.slice(0,n)+'…':t;};
+const spk=(key,name,short,side,type,min)=>({key,name,short,side,type,min});
+
+/* 形式ビルダー：立論c回・反駁r回（各側）、質疑の有無、反駁の先攻、時間 */
+const KAN=['','一','二','三'];
+const DEF_FMT={c:1,r:2,cx:true,cxMemo:false,first:'neg',cmin:6,xmin:3,rmin:4,prep:2};
+function buildFormat(o){
+  const L=[];const mc=o.c>1;
+  for(let i=1;i<=o.c;i++){
+    const s=i===1?'':String(i);
+    L.push(spk('ac'+s,mc?`肯定側第${KAN[i]}立論`:'肯定側立論',mc?`肯${i}立`:'肯立','aff','const',o.cmin));
+    if(o.cx)L.push(spk('nx'+s,mc?`否定側質疑（肯${i}立へ）`:'否定側質疑',mc?`否質${i}`:'否質','neg','cx',o.xmin));
+    L.push(spk('nc'+s,mc?`否定側第${KAN[i]}立論`:'否定側立論',mc?`否${i}立`:'否立','neg','const',o.cmin));
+    if(o.cx)L.push(spk('ax'+s,mc?`肯定側質疑（否${i}立へ）`:'肯定側質疑',mc?`肯質${i}`:'肯質','aff','cx',o.xmin));
+  }
+  const sides=o.first==='aff'?['aff','neg']:['neg','aff'];const mr=o.r>1;
+  for(let j=1;j<=o.r;j++)for(const sd of sides){
+    L.push(spk((sd==='aff'?'ar':'nr')+j,mr?`${SIDE_NAME[sd]}第${KAN[j]}反駁`:`${SIDE_NAME[sd]}反駁`,mr?`${SIDE_CH[sd]}${j}反`:`${SIDE_CH[sd]}反`,sd,'reb',o.rmin));
+  }
+  return L;
+}
+function fmtLabel(o){return `${o.c}立${o.r}反・質疑${o.cx?(o.cxMemo?'あり（メモする）':'あり（メモしない）'):'なし'}・反駁は${o.first==='aff'?'肯定':'否定'}側から`;}
+function inferFormat(r){
+  const sp=r.speeches;const cnt=(t,sd)=>sp.filter(s=>s.type===t&&s.side===sd).length;
+  const m=t=>{const x=sp.find(s=>s.type===t);return x?x.min:null;};
+  const fr=sp.find(s=>s.type==='reb');
+  return {c:Math.min(3,Math.max(1,cnt('const','aff'))),r:Math.min(3,Math.max(1,cnt('reb','aff'))),cx:sp.some(s=>s.type==='cx'),
+    first:fr?fr.side:'neg',cmin:m('const')??6,xmin:m('cx')??3,rmin:m('reb')??4,prep:r.prepMin??2,cxMemo:!!r.cxMemo};
+}
+const PRESETS={std:{label:fmtLabel(DEF_FMT),prep:2,speeches:()=>buildFormat(DEF_FMT)}};
+const QUICK=[[1,1],[1,2],[2,1],[2,2],[1,3]];
+/* 名前付きの形式（ボタン1つで回数・時間をまとめて設定） */
+const NAMED_FMT=[{key:'seminar',label:'ゼミ形式',o:{c:1,r:2,cx:true,cxMemo:false,first:'neg',cmin:6,xmin:4,rmin:6,prep:2}}];
+function fmtBuilderHTML(o){
+  const opt=(vals,cur)=>vals.map(([v,l])=>`<option value="${v}"${String(cur)===String(v)?' selected':''}>${l}</option>`).join('');
+  return `<div class="row" style="margin-bottom:8px"><span class="note" style="margin:0">よく使う形式</span>${NAMED_FMT.map(f=>`<button type="button" class="btn qk qk-named" data-named="${f.key}" title="${esc(fmtLabel(f.o))}・立論${f.o.cmin}分／質疑${f.o.xmin}分／反駁${f.o.rmin}分／準備${f.o.prep}分">${esc(f.label)}</button>`).join('')}${QUICK.map(([c,r])=>`<button type="button" class="btn qk" data-c="${c}" data-r="${r}">${c}立${r}反</button>`).join('')}</div>
+  <div class="fgrid fb4">
+    <label>立論（各側）<select data-k="c">${opt([[1,'1回'],[2,'2回'],[3,'3回']],o.c)}</select></label>
+    <label>反駁（各側）<select data-k="r">${opt([[1,'1回'],[2,'2回'],[3,'3回']],o.r)}</select></label>
+    <label>質疑<select data-k="cx">${opt([[1,'各立論のあとにあり'],[0,'なし']],o.cx?1:0)}</select></label>
+    <label>質疑のメモ<select data-k="cxMemo"${o.cx?'':' disabled'}>${opt([[0,'メモしない（時間だけ計る）'],[1,'メモする（質疑の列を出す）']],o.cxMemo?1:0)}</select></label>
+    <label>反駁の先攻<select data-k="first">${opt([['neg','否定側から'],['aff','肯定側から']],o.first)}</select></label>
+    <label>立論（分）<input type="number" min="0" max="60" step="0.5" data-k="cmin" value="${o.cmin}"></label>
+    <label>質疑（分）<input type="number" min="0" max="60" step="0.5" data-k="xmin" value="${o.xmin}"></label>
+    <label>反駁（分）<input type="number" min="0" max="60" step="0.5" data-k="rmin" value="${o.rmin}"></label>
+    <label>準備時間（分・各側）<input type="number" min="0" max="60" step="0.5" data-k="prep" value="${o.prep}"></label>
+  </div>
+  <div class="fbprev" aria-live="polite"></div>`;
+}
+/* ビルダーを要素に結びつけ、現在の設定を返す関数を返す */
+function mountBuilder(box,o,onChange){
+  const prev=box.querySelector('.fbprev');
+  const draw=()=>{const L=buildFormat(o);prev.innerHTML=`<b>${esc(fmtLabel(o))}</b>　全${L.length}スピーチ<div class="chips">${L.map((s,i)=>`<span class="chip ${s.side}${s.type==='cx'?' cx':''}">${i+1}. ${esc(s.short)} <small>${s.min}分</small></span>`).join('')}</div>`;if(onChange)onChange(o);};
+  box.querySelectorAll('[data-k]').forEach(i=>{i.oninput=i.onchange=()=>{const k=i.dataset.k;o[k]=(k==='cx'||k==='cxMemo')?i.value==='1':k==='first'?i.value:Math.max(0,+i.value||0);
+    if(k==='cx'){const cm=box.querySelector('[data-k=cxMemo]');if(cm)cm.disabled=!o.cx;}if(k==='c'||k==='r')o[k]=Math.min(3,Math.max(1,o[k]));draw();};});
+  box.querySelectorAll('.qk').forEach(b=>b.onclick=()=>{
+    const nf=b.dataset.named&&NAMED_FMT.find(f=>f.key===b.dataset.named);
+    if(nf)Object.assign(o,nf.o);else{o.c=+b.dataset.c;o.r=+b.dataset.r;}
+    box.querySelectorAll('[data-k]').forEach(i=>{const k=i.dataset.k;i.value=(k==='cx'||k==='cxMemo')?(o[k]?'1':'0'):String(o[k]);if(k==='cxMemo')i.disabled=!o.cx;});
+    draw();});
+  draw();
+  return ()=>o;
+}
+
+/* ================= 状態 ================= */
+const S={rounds:[],curId:null,settings:{showDrops:true,showCx:true,colw:'m',fs:'m'}};
+const ui={sel:null,edit:null,editBefore:null,editFresh:false,mode:null,modeSrc:null,focus:false,lastDown:{id:null,t:0}};
+const hist={};
+let lastSt=null;
+
+/* 書き込み先のスピーチ：質疑をメモしない試合で質疑の時間中なら、その質疑が対象にしている相手側の立論（直前の立論）。
+   それ以外は現在のスピーチそのもの */
+function writeSp(r){
+  r=r||R();if(!r)return null;const L=r.speeches;const i=L.findIndex(x=>x.key===r.cur);const s=L[i];
+  if(!s||s.type!=='cx'||r.cxMemo)return r.cur;
+  for(let k=i-1;k>=0;k--)if(L[k].type==='const'&&L[k].side!==s.side)return L[k].key;
+  for(let k=i-1;k>=0;k--)if(L[k].type!=='cx')return L[k].key;
+  return r.cur;
+}
+function R(){let r=S.rounds.find(x=>x.id===S.curId);if(!r){r=S.rounds[0];S.curId=r?r.id:null;}return r;}
+function spBy(r){const m={};r.speeches.forEach((s,i)=>{m[s.key]=Object.assign({i},s);});return m;}
+function card(id){const r=R();return r&&r.cards.find(c=>c.id===id);}
+
+function newRound(preset,meta){
+  const p=PRESETS[preset]||PRESETS.std;meta=meta||{};
+  const speeches=meta.speeches?JSON.parse(JSON.stringify(meta.speeches)):p.speeches();
+  return {id:uid(),title:meta.title||'新しい試合',motion:meta.motion||'',aff:meta.aff||'',neg:meta.neg||'',date:today(),
+    speeches,prepMin:meta.prepMin??p.prep,cxMemo:!!meta.cxMemo,cards:[],cur:speeches[0].key,createdAt:Date.now(),updatedAt:Date.now()};
+}
+function sampleRound(){
+  const r=newRound('std',{title:'サンプル：首都機能移転',motion:'日本は首都機能を移転すべきである（サンプル）',aff:'サンプル高校A',neg:'サンプル高校B'});
+  r.sample=true;let o=0;
+  const add=(sp,parent,text,extra)=>{const c=Object.assign({id:uid(),sp,parent,text,order:(++o)*1024,star:false,waive:false,links:[]},extra||{});r.cards.push(c);return c.id;};
+  const A1=add('ac',null,'メリット1：災害リスクの分散\n首都直下地震で政府中枢が同時に被災するリスクを下げる',{star:true});
+  add('ac',A1,'発生過程：中枢機能が東京に集中しているため、1回の地震で全体が止まる');
+  add('ac',A1,'深刻性：救援・復旧の指揮が遅れ、被害が拡大する');
+  const A2=add('ac',null,'メリット2：東京一極集中の緩和');
+  const A21=add('ac',A2,'官公庁が移ると関連企業・人口も移り、地方が活性化する');
+  add('nx',A1,'Q 移転先も被災しうるのでは？\nA 同時被災の確率が下がる点が重要');
+  const D1=add('nc',null,'デメリット1：莫大な移転費用\n新都市の建設に巨額の財政負担');
+  add('nc',D1,'その分、社会保障など他の支出が削られる');
+  const N1=add('nc',A1,'バックアップ拠点の整備で足りる。移転までは不要');
+  add('ax',D1,'Q 費用の試算根拠は？\nA 過去の政府試算');
+  add('nr1',A21,'企業は取引先の多い東京に残る。官庁だけ移っても人口は分散しない');
+  add('nr1',N1,'（延長）バックアップは平時から運用でき、費用も小さい');
+  const F1=add('ar1',N1,'バックアップでは平時の指揮系統と切り離され、非常時に機能しない');
+  const F2=add('ar1',D1,'費用は、防げる災害被害額と比べれば長期的に回収できる');
+  r.cards.find(c=>c.id===F2).links=[A1];
+  void F1;
+  r.cur='nr2';
+  return r;
+}
+
+function normRound(r){
+  if(!r||typeof r!=='object'||!Array.isArray(r.speeches)||!Array.isArray(r.cards)) return null;
+  if(!validId(r.id)) r.id=uid();
+  const seen=new Set();
+  r.speeches=r.speeches.filter(s=>s&&s.key&&!seen.has(String(s.key))&&seen.add(String(s.key))).map(s=>({key:String(s.key),name:String(s.name||s.key),short:String(s.short||s.name||s.key),side:s.side==='neg'?'neg':'aff',type:['const','cx','reb'].includes(s.type)?s.type:'reb',min:Math.max(0,+s.min||0)}));
+  if(!r.speeches.length) r.speeches=PRESETS.std.speeches();
+  const keys=new Set(r.speeches.map(s=>s.key));
+  const ids=new Set();
+  r.cards=r.cards.filter(c=>c&&c.id&&!ids.has(String(c.id))&&ids.add(String(c.id))).map(c=>({id:String(c.id),sp:keys.has(c.sp)?c.sp:r.speeches[0].key,parent:c.parent?String(c.parent):null,text:String(c.text??''),order:Number.isFinite(+c.order)?+c.order:0,star:!!c.star,waive:!!c.waive,links:Array.isArray(c.links)?c.links.map(String).filter(x=>ids.has(x)||true):[],...(c.kind==='sq'?{kind:'sq'}:{}),...(c.lateOff?{lateOff:true}:{})}));
+  const by=new Map(r.cards.map(c=>[c.id,c]));
+  for(const c of r.cards){
+    if(c.parent&&!by.has(c.parent)){c.parent=null;continue;}
+    const chain=new Set([c.id]);let p=c.parent;
+    while(p){if(chain.has(p)){c.parent=null;break;}chain.add(p);p=by.get(p)?.parent||null;}
+    c.links=c.links.filter(l=>by.has(l)&&l!==c.id);
+  }
+  {let again=true;while(again){again=false;const hasKid=new Set(r.cards.filter(c=>c.parent).map(c=>c.parent));
+    const keep=r.cards.filter(c=>c.text.trim()||hasKid.has(c.id));if(keep.length!==r.cards.length){r.cards=keep;again=true;}}}
+  if(!keys.has(r.cur)) r.cur=r.speeches[0].key;
+  r.title=String(r.title||'無題の試合');r.motion=String(r.motion||'');r.aff=String(r.aff||'');r.neg=String(r.neg||'');r.date=String(r.date||'');
+  r.prepMin=Number.isFinite(+r.prepMin)?Math.max(0,+r.prepMin):2;
+  if(typeof r.cxMemo!=='boolean')r.cxMemo=false;
+  r.updatedAt=+r.updatedAt||Date.now();r.createdAt=+r.createdAt||r.updatedAt;
+  return r;
+}
+
+/* ================= 解析（構造・配置・番号・未反論） ================= */
+function analyze(r){
+  const sb=spBy(r);
+  const byId=new Map(r.cards.map(c=>[c.id,c]));
+  const kids=new Map();const roots=[];
+  for(const c of r.cards){
+    if(c.parent&&byId.has(c.parent)){if(!kids.has(c.parent))kids.set(c.parent,[]);kids.get(c.parent).push(c);}
+    else roots.push(c);
+  }
+  kids.forEach((arr,pid)=>{const p=byId.get(pid);arr.sort((a,b)=>{const sa=a.sp===p.sp?0:1,sb2=b.sp===p.sp?0:1;if(sa!==sb2)return sa-sb2;return (sb[a.sp].i-sb[b.sp].i)||(a.order-b.order);});});
+  const isSq=c=>c.kind==='sq'&&!c.parent;
+  roots.sort((a,b)=>((isSq(b)?1:0)-(isSq(a)?1:0))||(sb[a.sp].i-sb[b.sp].i)||(a.order-b.order));
+
+  // 番号と種類
+  const tags=new Map(),kinds=new Map(),atk=new Map(),depth=new Map();
+  const num={aff:0,neg:0};
+  const walk=(c,stack)=>{
+    if(stack.has(c.id))return;stack.add(c.id);
+    const s=sb[c.sp];let subN=0;const lt={aff:0,neg:0};
+    for(const k of kids.get(c.id)||[]){
+      const ks=sb[k.sp];
+      if(k.sp===c.sp){
+        tags.set(k.id,tags.get(c.id)+'-'+(++subN));
+        kinds.set(k.id,kinds.get(c.id)==='質疑'?'質疑':'下位');
+        atk.set(k.id,atk.get(c.id));depth.set(k.id,Math.min(4,depth.get(c.id)+1));
+      }else{
+        const n=lt[ks.side]++;
+        tags.set(k.id,tags.get(c.id)+'·'+SIDE_CH[ks.side]+(LETTERS[n]||('z'+(n-25))));
+        depth.set(k.id,0);
+        if(ks.type==='cx'){kinds.set(k.id,'質疑');atk.set(k.id,atk.get(c.id));}
+        else if(ks.side===s.side){kinds.set(k.id,'延長');atk.set(k.id,atk.get(c.id));}
+        else{const a=atk.get(c.id)+1;atk.set(k.id,a);kinds.set(k.id,a===1?'反論':'再反論');}
+      }
+      walk(k,stack);
+    }
+  };
+  const sqn={aff:0,neg:0};
+  for(const c of roots){
+    const s=sb[c.sp];
+    if(isSq(c)){const m=++sqn[s.side];tags.set(c.id,SIDE_CH[s.side]+'現'+(m>1?m:''));kinds.set(c.id,'現状分析');}
+    else{const n=++num[s.side];
+    tags.set(c.id,SIDE_CH[s.side]+n);
+    kinds.set(c.id,s.type==='cx'?'質疑':s.type==='reb'?'新論点':'論点');}
+    atk.set(c.id,0);depth.set(c.id,0);
+    walk(c,new Set());
+  }
+
+  // 配置
+  const vis=r.speeches.filter(s=>r.cxMemo||s.type!=='cx');
+  const colOf={};vis.forEach((s,i)=>colOf[s.key]=i);
+  const occ=new Map(),pos=new Map(),bands=[];let next=0;
+  const free=(row,col)=>!(occ.get(row)&&occ.get(row).has(col));
+  const mark=(row,col)=>{if(!occ.has(row))occ.set(row,new Set());occ.get(row).add(col);};
+  const place=(c,desired,band,stack)=>{
+    if(stack.has(c.id))return;stack.add(c.id);
+    let row=desired;const shown=(c.sp in colOf);
+    if(shown){const col=colOf[c.sp];row=Math.max(desired,band.start);while(!free(row,col))row++;mark(row,col);pos.set(c.id,{row,col,band:bands.length});if(row>band.end)band.end=row;}
+    for(const k of kids.get(c.id)||[]) place(k,(k.sp===c.sp&&shown)?row+1:row,band,stack);
+  };
+  for(const rc of roots){
+    const band={start:next,end:next-1,root:rc.id};
+    place(rc,next,band,new Set());
+    if(band.end>=band.start){band.idx=bands.length;bands.push(band);next=band.end+1;}
+  }
+  // band index fix (pos.band was set to bands.length at time of placing)
+  // 未反論
+  const count={};r.speeches.forEach(s=>count[s.key]=0);r.cards.forEach(c=>count[c.sp]++);
+  const curI=sb[r.cur]?sb[r.cur].i:0;
+  // 「答えた」の判定：side 側が beforeI より前のスピーチ（質疑を除く）で、そのカード・同じ列の上位／下位に答えているか。レイトの反論は答えに数えない
+  const late=new Set(),lateOff=new Set();
+  const dAns=(c,side,beforeI)=>(kids.get(c.id)||[]).some(k=>{const ks=sb[k.sp];return ks.side===side&&ks.type!=='cx'&&ks.i<beforeI&&!late.has(k.id);});
+  const anyAns=(c,side,beforeI)=>{
+    if(dAns(c,side,beforeI))return true;
+    const down=(x,d)=>d<40&&(kids.get(x.id)||[]).some(k=>k.sp===x.sp&&(dAns(k,side,beforeI)||down(k,d+1)));
+    if(down(c,0))return true;
+    let x=c,g=0;while(x.parent&&byId.has(x.parent)&&g++<40){const p=byId.get(x.parent);if(p.sp!==x.sp)break;if(dAns(p,side,beforeI))return true;x=p;}
+    return false;
+  };
+  // レイト：相手の議論に、それより後の自分側の反駁で答える機会があったのに答えず、さらに後の反駁で初めて答えたもの
+  // （立論・質疑は「答える機会」に数えない。印を付けるのは遅れて出た反論そのものだけ）
+  const replyCards=r.cards.filter(c=>c.parent&&byId.has(c.parent)&&byId.get(c.parent).sp!==c.sp).sort((a,b)=>sb[a.sp].i-sb[b.sp].i);
+  // レイトの判定（反論・延長の両方）：
+  //  反論先（または延長する自分の論点）とその同じ列の上位・下位について、そこにつながる相手側の議論
+  //  （直接の反論だけでなく、その延長・再反論まで流れ全体）のうち、答える機会のあった反駁で答えていないものが
+  //  一つでもあれば、ここで答えるのはレイト。相手が一度も反論していない論点を「残る」と延長するのはレイトではない
+  for(const c of replyCards){
+    const cs=sb[c.sp],p=byId.get(c.parent),ps=sb[p.sp];
+    if(cs.type!=='reb'||ps.type==='cx')continue;
+    const fam=new Set([p.id]);
+    let x=p,g=0;while(x.parent&&byId.has(x.parent)&&g++<40){const q=byId.get(x.parent);if(q.sp!==x.sp)break;fam.add(q.id);x=q;}
+    const down=y=>{for(const k of kids.get(y.id)||[])if(k.sp===y.sp&&!fam.has(k.id)){fam.add(k.id);down(k);}};down(p);
+    // 相手のカードへの反論なら、その上にある自分側の最も近い論点（論点の流れの起点）の流れも見る
+    // 例：肯2 ← 否1反の反論（肯1反で未回答）、肯2 ← 否2反の反論 のとき、肯2反で否2反の反論に答えるのも肯2 の立て直しなのでレイト
+    if(ps.side!==cs.side){
+      let o=p,g2=0;while(o&&sb[o.sp].side!==cs.side&&o.parent&&byId.has(o.parent)&&g2++<60)o=byId.get(o.parent);
+      if(o&&sb[o.sp].side===cs.side){
+        fam.add(o.id);
+        let y=o,g3=0;while(y.parent&&byId.has(y.parent)&&g3++<40){const q=byId.get(y.parent);if(q.sp!==y.sp)break;fam.add(q.id);y=q;}
+        const dn=z=>{for(const k of kids.get(z.id)||[])if(k.sp===z.sp&&!fam.has(k.id)){fam.add(k.id);dn(k);}};dn(o);
+      }
+    }
+    const cand=new Set();
+    if(ps.side!==cs.side)cand.add(p.id);
+    const walkAll=(y,d)=>{if(d>60)return;cand.add(y.id);for(const k of kids.get(y.id)||[])walkAll(k,d+1);};
+    for(const fid of fam){const f=byId.get(fid);for(const k of kids.get(fid)||[])if(k.sp!==f.sp)walkAll(k,0);}
+    let isLate=false;
+    for(const aid of cand){
+      if(aid===c.id)continue;const a=byId.get(aid);const as=sb[a.sp];
+      if(as.side===cs.side||as.type==='cx'||as.i>=cs.i||late.has(aid))continue;
+      const missedA=r.speeches.slice(as.i+1,cs.i).some(sx=>sx.side===cs.side&&sx.type==='reb');
+      if(missedA&&!anyAns(a,cs.side,cs.i)){isLate=true;break;}
+    }
+    if(isLate){if(c.lateOff)lateOff.add(c.id);else late.add(c.id);}
+  }
+  const otherSide=c=>sb[c.sp].side==='aff'?'neg':'aff';
+  const sqSet=new Set();
+  const addSq=c=>{if(sqSet.has(c.id))return;sqSet.add(c.id);for(const k of kids.get(c.id)||[])if(k.sp===c.sp)addSq(k);};
+  roots.filter(isSq).forEach(addSq);
+  const drops=new Set();
+  if(S.settings.showDrops){
+    for(const c of r.cards){
+      const s=sb[c.sp];if(s.type==='cx'||c.waive||sqSet.has(c.id)||late.has(c.id))continue;
+      const later=r.speeches.slice(s.i+1).filter(x=>x.side!==s.side&&x.type!=='cx');
+      if(!later.length)continue;
+      if(!later.some(x=>count[x.key]>0||sb[x.key].i<curI))continue;
+      if(anyAns(c,otherSide(c),Infinity))continue;
+      drops.add(c.id);
+    }
+  }
+  return {sb,byId,kids,roots,tags,kinds,atk,depth,vis,colOf,pos,bands,rows:next,drops,count,sqSet,late,lateOff};
+}
+
+/* ================= 描画 ================= */
+const grid=$('#grid');
+let rendering=false;
+
+function render(){renderTop();renderGrid();renderTimer();renderHint();}
+
+function renderTop(){
+  const r=R();
+  const sel=$('#roundSel');
+  const list=S.rounds.slice().sort((a,b)=>b.updatedAt-a.updatedAt);
+  sel.innerHTML=list.map(x=>`<option value="${esc(x.id)}"${x.id===r.id?' selected':''}>${esc(x.title)}${x.date?'（'+esc(x.date)+'）':''}</option>`).join('');
+  const m=$('#mMotion');m.textContent=r.motion||'論題が未設定です（試合設定で入力）';m.classList.toggle('empty',!r.motion);
+  $('#mAff').textContent=r.aff||'肯定側';$('#mNeg').textContent=r.neg||'否定側';
+  const s=r.speeches.find(x=>x.key===r.cur);
+  const cn=$('#curName');cn.textContent=s?s.name:'—';cn.className=s?s.side:'';
+  const ws=writeSp(r);const wsp=r.speeches.find(x=>x.key===ws);
+  $('#curSmall').textContent=ws!==r.cur&&wsp?`現在のスピーチ（メモ先：${wsp.short}）`:'現在のスピーチ';
+  const h=hist[r.id];$('#btnUndo').disabled=!(h&&h.undo.length);$('#btnRedo').disabled=!(h&&h.redo.length);
+}
+
+/* 論点（一番上の階層のカード）は最初の文を太字に：最初の「。．！？!?」まで、またはその前の改行まで */
+function leadHTML(t){
+  const m=t.match(/^[^\n。．！？!?]*[。．！？!?]?/);const head=m?m[0]:'';
+  return head.trim()?`<b class="lead">${esc(head)}</b>${esc(t.slice(head.length))}`:esc(t);
+}
+function cardHTML(r,c,st){
+  const p=st.pos.get(c.id);const s=st.sb[c.sp];const side=s.side;
+  const tag=st.tags.get(c.id)||'';const kind=st.kinds.get(c.id)||'';
+  const parent=c.parent?st.byId.get(c.parent):null;
+  // 番号は「反論先の番号・自分」。反論先の部分を押すとそのカードへ移る（反論先の内容は線とツールチップで示す）
+  let tagHTML=`<span class="tag">${esc(tag)}</span>`;
+  if(parent&&parent.sp!==c.sp){
+    const ps=st.sb[parent.sp];const pt=st.tags.get(parent.id)||'';
+    const own=tag.startsWith(pt)?tag.slice(pt.length):tag;
+    tagHTML=`<span class="tagw"><button class="tag tag-p ${ps.side}" data-act="goto" data-id="${parent.id}" title="反論先（${esc(pt)}）へ移動：${esc(snip(parent.text,80))}">${esc(pt)}</button><span class="tag tag-s">${esc(own)}</span></span>`;
+  }
+  const SHOW_KIND={'反論':1,'再反論':1,'延長':1,'新論点':1,'現状分析':1};
+  const links=(c.links||[]).filter(l=>st.byId.has(l));
+  const lk=links.length?`<div class="links">${links.map(l=>`<span><button class="lnk" data-act="goto" data-id="${l}" title="クロスアプライ先へ移動">⇢ ${esc(st.tags.get(l))}</button><button class="lnk-x" data-act="unlink" data-t="${l}" aria-label="このリンクを外す">×</button></span>`).join('')}</div>`:'';
+  const body=ui.edit===c.id?`<textarea class="ed" id="ed-${c.id}" rows="1" aria-label="${esc(tag)} の内容" spellcheck="false">${esc(c.text)}</textarea>`
+    :`<div class="tx">${!c.text?'<span class="ph">（空）</span>':!c.parent?leadHTML(c.text):esc(c.text)}</div>`;
+  const isRootish=!c.parent||(parent&&parent.sp===c.sp);
+  const cls=['card',side,s.type==='cx'?'cx':'',!c.parent?'root':'',c.waive?'waive':'',ui.edit===c.id?'editing':'',st.late.has(c.id)?'is-late':'',ui.edit===c.id&&c.sp!==writeSp(r)?'fixing':''].join(' ');
+  // 操作ボタンは選択中のカードにマウスを乗せたときだけ、カードの下に重ねて出す（レイアウトを動かさない）
+  const acts=`<div class="acts" role="toolbar" aria-label="カードの操作">
+    <button data-act="reply" title="現在のスピーチで反論する (R)">反論</button>
+    <button data-act="sub" title="同じスピーチ内の下位論点を追加 (S)">下位</button>
+    <button data-act="link" title="別の論点にも適用＝クロスアプライ (L)">リンク</button>
+    <button data-act="reparent" title="反論先を付け替える (P)">付替</button>
+    <button data-act="star" aria-pressed="${c.star}" title="重要マーク (*)">${c.star?'★解除':'★'}</button>
+    <button data-act="waive" aria-pressed="${c.waive}" title="${c.waive?'放棄を取り消す':'譲歩・放棄した論点として薄く表示'} (X)">${c.waive?'放棄取消':'放棄'}</button>
+    ${st.late.has(c.id)?'<button data-act="lateoff" title="審査員がレイトを認めなかったときに、レイトの判定を取り消す">レイト取消</button>':''}${st.lateOff.has(c.id)?'<button data-act="lateoff" title="取り消したレイトの判定を元に戻す">レイトに戻す</button>':''}
+    <button data-act="del" class="del" title="削除 (Shift+Delete)">削除</button></div>`;
+  void isRootish;
+  return `<div class="${cls}" data-id="${c.id}" style="grid-column:${p.col+1};grid-row:${p.row+2};--d:${st.depth.get(c.id)||0}">
+    <div class="ch" aria-label="${SIDE_NAME[side]}">${tagHTML}${SHOW_KIND[kind]?`<span class="kind k-${kind}"${kind==='新論点'?' title="反駁のスピーチで新しく出された論点（ルール上は通常認められない）"':''}>${kind}</span>`:''}${c.star?'<span class="star" aria-label="重要">★</span>':''}${st.late.has(c.id)?'<button class="late" data-act="lateoff" title="レイト：前の反駁で答えなかった議論への遅い反論（ルール上、なかったものとして扱われる）。審査員が認めた場合は、カードを選んでこの印を押すと取り消せる">レイト<span class="late-x">× 取り消す</span></button>':''}${st.lateOff.has(c.id)?'<button class="late off" data-act="lateoff" title="レイトの判定を取り消し済み（審査員が有効と判断）。カードを選んでこの印を押すとレイトに戻す"><span class="late-w">レイト</span><span class="late-x">↺ 戻す</span></button>':''}${st.drops.has(c.id)?'<span class="drop" title="相手側がまだ答えていません">! 未反論</span>':''}</div>
+    ${body}${lk}${acts}</div>`;
+}
+
+function renderGrid(){
+  const r=R();const st=analyze(r);lastSt=st;
+  if(ui.sel&&!st.pos.has(ui.sel))ui.sel=null;
+  if(ui.edit&&!st.pos.has(ui.edit))ui.edit=null;
+  const n=st.vis.length;
+  grid.style.gridTemplateColumns=st.vis.map(s=>s.type==='cx'?'calc(var(--colw) * .72)':'var(--colw)').join(' ');
+  const lastRow=st.rows+3;
+  let h='<svg id="wires" aria-hidden="true"></svg>';
+  st.vis.forEach((s,i)=>{h+=`<div class="colwash ${s.side} ${s.type==='cx'?'cx':''} ${s.key===writeSp(r)?'cur':''}" style="grid-column:${i+1};grid-row:1 / ${lastRow}"></div>`;});
+  st.bands.forEach((b,i)=>{h+=`<div class="band ${i%2?'odd':''}" style="grid-column:1 / -1;grid-row:${b.start+2} / ${b.end+3}"></div>`;});
+  st.vis.forEach((s,i)=>{
+    const cur=s.key===writeSp(r);const viaCx=cur&&r.cur!==s.key;
+    h+=`<div class="colhead ${s.side} ${cur?'cur':''}" style="grid-column:${i+1};grid-row:1">
+      <button class="ch-set" data-act="setcur" data-sp="${esc(s.key)}" title="${esc(s.name)}（${s.min}分）を現在のスピーチにする">
+        <span class="sb ${s.side}">${SIDE_CH[s.side]}</span>
+        <span class="ch-t"><b>${esc(s.short)}</b><small>${s.min}分</small>${cur?(viaCx?'<span class="ch-now" title="質疑の時間中は、この立論にメモします">質疑中</span>':'<span class="ch-now">現在</span>'):''}</span>
+      </button>
+      ${cur?`<button class="ch-add" data-act="addroot" data-sp="${esc(s.key)}" aria-label="${esc(s.name)}に${s.type==='reb'?'反駁':'新しい論点'}を追加" title="${s.type==='reb'?'反駁を追加（反駁先を選ぶ）':'新しい論点を追加'}">＋</button>`:''}</div>`;
+  });
+  for(const c of r.cards){if(st.pos.has(c.id))h+=cardHTML(r,c,st);}
+  if(!r.cards.length){
+    h+=`<div class="empty-hint" style="grid-row:2"><b>まだカードがありません。</b><br><kbd>；</kbd> か <kbd>＋</kbd>（列見出しの「＋」でも可）で、現在のスピーチに論点を追加します。<br>カードを選んで <kbd>R</kbd> を押すと、現在のスピーチにその論点への反論が入ります。<br>入力中は <kbd>Enter</kbd> で改行、<kbd>Esc</kbd> で確定、<kbd>Tab</kbd> で下位論点にします。</div>`;
+  }
+  h+=`<div style="grid-column:1;grid-row:${lastRow};height:1px"></div>`;
+  rendering=true;grid.innerHTML=h;rendering=false;
+  grid.classList.toggle('picking',!!ui.mode);
+  if(ui.edit){const ta=grid.querySelector('textarea.ed');if(ta){autosize(ta);ta.focus({preventScroll:true});const L=ui.caret==='start'?0:ta.value.length;ta.setSelectionRange(L,L);ui.caret='end';ensureVisible(ui.edit);}}
+  renderDropCount(st);
+  if(typeof syncEdgePad==='function')syncEdgePad();
+  applySelection();
+}
+
+function renderDropCount(st){
+  const n=st.drops.size;$('#dropCnt').textContent=n;$('#btnDrop').classList.toggle('has',n>0);$('#btnDrop').disabled=!S.settings.showDrops;
+}
+
+function relatedSet(st,id){
+  const set=new Set([id]);let c=st.byId.get(id);let g=0;
+  while(c&&c.parent&&st.byId.has(c.parent)&&g++<200){set.add(c.parent);c=st.byId.get(c.parent);}
+  const stack=[id];while(stack.length){const x=stack.pop();for(const k of st.kids.get(x)||[]){if(!set.has(k.id)){set.add(k.id);stack.push(k.id);}}}
+  const me=st.byId.get(id);(me&&me.links||[]).forEach(l=>set.add(l));
+  for(const c2 of st.byId.values()){if((c2.links||[]).includes(id))set.add(c2.id);}
+  return set;
+}
+
+function applySelection(){
+  const st=lastSt;if(!st)return;
+  const rel=ui.sel?relatedSet(st,ui.sel):null;
+  const band=ui.sel&&ui.focus?st.pos.get(ui.sel)?.band:null;
+  grid.querySelectorAll('.card').forEach(el=>{
+    const id=el.dataset.id;
+    el.classList.toggle('sel',id===ui.sel);
+    el.classList.toggle('rel',!!rel&&rel.has(id));
+    el.classList.toggle('dim',band!=null&&st.pos.get(id)?.band!==band&&!(rel&&rel.has(id)));
+    el.classList.toggle('nopick',ui.mode==='replypick'&&!!st.sb[ui.modeSp]&&st.sb[st.byId.get(id).sp].i>=st.sb[ui.modeSp].i);
+  });
+  drawWires(rel);
+  renderHint();
+}
+
+function drawWires(rel){
+  const st=lastSt;const svg=$('#wires');if(!svg||!st)return;
+  if(rel===undefined)rel=ui.sel?relatedSet(st,ui.sel):null;
+  // 位置は #grid 自身の座標（拡大縮小の影響を受けない offset 値）で測る
+  const rects=new Map();let W=grid.offsetWidth,H=grid.offsetHeight;
+  grid.querySelectorAll('.card').forEach(el=>{const x=el.offsetLeft,y=el.offsetTop,w=el.offsetWidth,h=el.offsetHeight;rects.set(el.dataset.id,{x,y,w,h});W=Math.max(W,x+w+40);H=Math.max(H,y+h+40);});
+  svg.setAttribute('width',W);svg.setAttribute('height',H);svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const Y=10;
+  let p=`<defs>
+    <marker id="mk-aff" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L8,4 L0,8 z" style="fill:var(--aff)"/></marker>
+    <marker id="mk-neg" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L8,4 L0,8 z" style="fill:var(--neg)"/></marker></defs>`;
+  const curve=(a,b,side,cls,hot,marker)=>{
+    let x1,x2;const y1=a.y+Y,y2=b.y+Y;
+    if(b.x>=a.x+a.w){x1=a.x+a.w;x2=b.x-1;}else{x1=a.x;x2=b.x+b.w+1;}
+    const dx=Math.max(18,Math.abs(x2-x1)*0.45)*(x2>=x1?1:-1);
+    return `<path class="w ${side} ${cls}${hot?' hot':''}" d="M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}"${marker?` marker-end="url(#mk-${side})"`:''}/>`;
+  };
+  for(const c of st.byId.values()){
+    const b=rects.get(c.id);if(!b)continue;
+    const side=st.sb[c.sp].side;
+    if(c.parent){
+      const a=rects.get(c.parent);
+      if(a){
+        const hot=!!rel&&rel.has(c.id)&&rel.has(c.parent);
+        const par=st.byId.get(c.parent);
+        if(par.sp===c.sp){
+          const x=a.x+7;
+          p+=`<path class="w sub${hot?' hot':''}" d="M${x},${a.y+a.h} V${b.y+Y} H${b.x}"/>`;
+        }else p+=curve(a,b,side,'',hot,true);
+      }
+    }
+    for(const l of c.links||[]){
+      const a=rects.get(l);if(!a)continue;
+      const hot=!!rel&&rel.has(c.id)&&rel.has(l)&&(ui.sel===c.id||ui.sel===l);
+      p+=curve(a,b,side,'link',hot,false);
+    }
+  }
+  svg.innerHTML=p;
+  svg.classList.toggle('has-hot',!!rel&&rel.size>1);
+}
+
+function renderHint(){
+  const h=$('#hint');
+  const ce=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent)?'⌘':'Ctrl';
+  if(ui.edit)h.innerHTML=`<kbd>Enter</kbd> 改行　<kbd>Esc</kbd> 確定　${isReplyCard(card(ui.edit))?'<kbd>Shift+矢印</kbd> 反駁先を変える':'<kbd>Shift+↑↓</kbd> 上下へ・追加'}　<kbd>${ce}+Enter</kbd> 次のカード　<kbd>Tab</kbd> 下位へ　<kbd>Shift+Delete</kbd> 削除　<kbd>?</kbd> 一覧`;
+  else if(ui.sel)h.innerHTML='<kbd>R</kbd> 反論　<kbd>S</kbd> 下位　<kbd>Enter</kbd> 編集　<kbd>Shift+矢印</kbd> 移動　<kbd>L</kbd> リンク　<kbd>P</kbd> 付替　<kbd>Shift+Delete</kbd> 削除　<kbd>?</kbd> 一覧';
+  else h.innerHTML='<kbd>＋</kbd><kbd>；</kbd> / <kbd>Shift+矢印</kbd> 書き始める　<kbd>Shift+G</kbd> 現状分析　<kbd>[</kbd><kbd>]</kbd> スピーチ切替　<kbd>D</kbd> 次の未反論　<kbd>?</kbd> 一覧';
+  const m=$('#mode');
+  if(ui.mode){
+    m.classList.add('on');
+    const rs=ui.mode==='replypick'?R().speeches.find(x=>x.key===ui.modeSp):null;
+    m.innerHTML=ui.mode==='link'?'クロスアプライ先のカードをクリック <kbd>Esc</kbd> 取消'
+      :ui.mode==='replypick'?`${esc(rs?rs.short:'')}：反駁する論点をクリック、または矢印で選んで <kbd>Enter</kbd>　<button class="btn" id="mkNew" type="button" title="ルール上は認められない新しい論点。相手が出した場合の記録用">反駁での新論点として書く</button> <kbd>Esc</kbd> 取消`
+      :'新しい反論先のカードをクリック <button class="btn" id="mkRoot" type="button">独立した論点にする</button> <kbd>Esc</kbd> 取消';
+    const bn=$('#mkNew');if(bn)bn.onclick=()=>{const sp=ui.modeSp;cancelMode();createCard({sp,parent:null});};
+    const b=$('#mkRoot');if(b)b.onclick=()=>{const src=ui.modeSrc;cancelMode();mutate(()=>{const c=card(src);if(c){c.parent=null;c.order=maxOrder()+1024;}});};
+  }else if(ui.edit&&isReplyCard(card(ui.edit))&&!isFixing()){
+    const c=card(ui.edit);const st=lastSt;const t=card(c.parent);const r=R();const ts=r.speeches.find(x=>x.key===t.sp);
+    const reb=(r.speeches.find(x=>x.key===c.sp)||{}).type==='reb';
+    m.classList.add('on');m.classList.remove('fix');
+    m.innerHTML=`反駁先：${esc(ts?ts.short:'')} <span class="tag">${esc(st&&st.tags.get(t.id)||'')}</span> ${esc(snip(t.text,18))}　<kbd>Shift+矢印</kbd> で変更${reb?'　<button class="btn" id="mkNew2" type="button" title="反論先のない新しい論点に変える（ルール上は通常認められない。相手が出した場合の記録用）">反駁での新論点にする</button>':''}`;
+    const b2=$('#mkNew2');if(b2)b2.onpointerdown=ev=>{ev.preventDefault();const cc=card(ui.edit);if(!cc)return;const ta=grid.querySelector('#ed-'+cc.id);if(ta)cc.text=ta.value;cc.parent=null;cc.order=maxOrder()+1024;render();};
+  }else if(isFixing()){
+    const r=R();const c=card(ui.edit);const ps=r.speeches.find(x=>x.key===c.sp);const cs=r.speeches.find(x=>x.key===writeSp(r));
+    m.classList.add('on','fix');
+    const later=r.speeches.indexOf(ps)>r.speeches.indexOf(cs);
+    m.innerHTML=`${later?'後の':'過去の'}スピーチ（${esc(ps.short)}）を修正中　<kbd>Esc</kbd> で現在のスピーチ（${esc(cs?cs.short:'')}）に戻る`;
+  }else{m.classList.remove('on');m.innerHTML='';}
+  if(!isFixing())m.classList.remove('fix');
+}
+
+function autosize(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+2+'px';}
+function ensureVisible(id){reveal([id]);}
+/* 指定のカードが丸ごと見える位置まで表示を動かす（上に固定された列見出しに隠れる分も考える）。
+   全部が入りきらないときは、先頭のカード（反駁先の論点など）を優先して丸ごと見せる */
+function reveal(ids){
+  const sc=document.getElementById('scroller');if(!sc)return;
+  const els=ids.map(id=>id&&grid.querySelector(`.card[data-id="${id}"]`)).filter(Boolean);if(!els.length)return;
+  const r0=sc.getBoundingClientRect();const head=grid.querySelector('.colhead');const hh=head?head.getBoundingClientRect().height:0;
+  const vt=r0.top+hh+6,vb=r0.top+sc.clientHeight-6,vl=r0.left+6,vr=r0.left+sc.clientWidth-6;
+  const rs=els.map(e=>e.getBoundingClientRect());const p=rs[0];
+  const u={left:Math.min(...rs.map(r=>r.left)),right:Math.max(...rs.map(r=>r.right)),top:Math.min(...rs.map(r=>r.top)),bottom:Math.max(...rs.map(r=>r.bottom))};
+  const fit=(a0,a1,v0,v1)=>a1-a0<=v1-v0?(a0<v0?a0-v0:a1>v1?a1-v1:0):null;
+  // 入りきらないときは先頭のカードを左上に寄せる（反論は反駁先より右・下に置かれるので、書いているカードもできるだけ見える）
+  let dx=fit(u.left,u.right,vl,vr);if(dx===null)dx=p.left-vl;
+  let dy=fit(u.top,u.bottom,vt,vb);if(dy===null)dy=p.top-vt;
+  if(dx)sc.scrollLeft+=dx;if(dy)sc.scrollTop+=dy;
+}
+let wireRaf=0;function wiresSoon(){cancelAnimationFrame(wireRaf);wireRaf=requestAnimationFrame(()=>drawWires());}
+
+/* ================= 操作 ================= */
+function snapCards(r){return JSON.stringify(r.cards);}
+function H(r){return hist[r.id]||(hist[r.id]={undo:[],redo:[]});}
+function pushUndo(before){const r=R();const h=H(r);h.undo.push(before);if(h.undo.length>200)h.undo.shift();h.redo=[];}
+function mutate(fn){const r=R();const before=snapCards(r);fn(r);if(snapCards(r)!==before){pushUndo(before);touch(r);}render();}
+function maxOrder(){const r=R();return r.cards.reduce((m,c)=>Math.max(m,c.order),0);}
+function undo(){if(ui.edit)commitEdit({silent:true});const r=R();const h=H(r);if(!h.undo.length)return toast('これ以上戻せません');h.redo.push(snapCards(r));r.cards=JSON.parse(h.undo.pop());touch(r);render();toast('元に戻しました');}
+function redo(){if(ui.edit)commitEdit({silent:true});const r=R();const h=H(r);if(!h.redo.length)return toast('やり直す操作がありません');h.undo.push(snapCards(r));r.cards=JSON.parse(h.redo.pop());touch(r);render();toast('やり直しました');}
+
+function createCard({sp,parent=null,after=null,kind=null}){
+  const r=R();
+  const s=r.speeches.find(x=>x.key===sp);if(!s)return;
+  if(sp!==writeSp(r)){const cs=r.speeches.find(x=>x.key===writeSp(r));toast(`新しいカードは現在のスピーチ（${cs?cs.short:''}）にだけ追加できます`);return;}
+  if(ui.mode)cancelMode();
+  if(s.type==='cx'&&!r.cxMemo){toast('この試合では質疑をメモしない設定です（「表示」または「試合設定」で変更できます）');return;}
+  const before=snapCards(r);
+  const sibs=r.cards.filter(x=>x.sp===sp&&(x.parent||null)===(parent||null)).sort((a,b)=>a.order-b.order);
+  let order;
+  if(after){const i=sibs.findIndex(x=>x.id===after.id);const nx=sibs[i+1];order=nx?(after.order+nx.order)/2:after.order+1024;}
+  else if(!parent){order=maxOrder()+1024;}
+  else order=(sibs.length?sibs[sibs.length-1].order:0)+1024;
+  const c={id:uid(),sp,parent,text:'',order,star:false,waive:false,links:[]};if(kind==='sq'&&!parent)c.kind='sq';
+  r.cards.push(c);ui.resumeId=c.id;
+  ui.sel=c.id;ui.edit=c.id;ui.editBefore=before;ui.editFresh=true;
+  render();
+}
+function startEdit(id,opts){const r=R();if(!card(id))return;if(ui.edit===id)return;if(ui.edit)commitEdit({silent:true});ui.sel=id;ui.edit=id;ui.editBefore=snapCards(r);ui.editFresh=false;ui.caret=(opts&&opts.caret)||'end';if(card(id).sp===writeSp(r))ui.resumeId=id;render();}
+/* 過去のスピーチを修正しているか */
+function isFixing(){const c=ui.edit&&card(ui.edit);return !!(c&&c.sp!==writeSp());}
+/* 現在のスピーチの記入に戻る：直前に書いていたカード、なければその列のいちばん下のカード */
+function resumeCurrent(){
+  const r=R();const st=lastSt;let id=ui.resumeId;const c=id&&card(id);
+  const ws=writeSp(r);
+  if(!(c&&c.sp===ws)){id=null;let best=null;if(st)for(const [cid,q] of st.pos){if(st.byId.get(cid).sp!==ws)continue;if(!best||q.row>best.row)best={cid,row:q.row};}id=best&&best.cid;}
+  const cs=r.speeches.find(x=>x.key===ws);
+  if(id){startEdit(id,{caret:'end'});return;}
+  ui.sel=null;render();
+  const h=grid.querySelector('.colhead.cur');if(h)h.scrollIntoView({block:'nearest',inline:'nearest'});
+  toast(`現在のスピーチ（${cs?cs.short:''}）に戻りました。＋ か ； で書き始めます`);
+}
+/* 同じ列で一つ上(-1)／一つ下(+1)のカード */
+function cardVert(id,dir){
+  const st=lastSt;const p=st&&st.pos.get(id);if(!p)return null;let best=null;
+  for(const [cid,q] of st.pos){if(q.col!==p.col)continue;if(dir>0?q.row>p.row:q.row<p.row){const d=Math.abs(q.row-p.row);if(!best||d<best.d)best={id:cid,d};}}
+  return best&&best.id;
+}
+/* 選択中：↓で一つ下へ。いちばん下なら同じ階層に新しいカード */
+function selVertical(dir,repeat){
+  const nb=cardVert(ui.sel,dir);
+  if(nb){ui.sel=nb;applySelection();ensureVisible(nb);return;}
+  if(dir>0&&!repeat&&!ui.mode){
+    const c=card(ui.sel);if(!c)return;
+    if(isReplyCard(c)){
+      const nt=stepTarget(c.sp,c.parent,1);
+      if(!nt)return toast('これより下に反駁できる論点がありません');
+      const ex=R().cards.find(x=>x.parent===nt&&x.sp===c.sp)||card(rowCardIn(c.sp,nt));
+      if(ex){ui.sel=ex.id;applySelection();ensureVisible(ex.id);return;}
+      return createCard({sp:c.sp,parent:nt});
+    }
+    createCard({sp:c.sp,parent:c.parent,after:c});
+  }
+}
+/* 入力中：カードの端で↑↓を押すと上下のカードの入力へ。いちばん下で↓なら次のカードを追加 */
+function editVertical(dir,repeat){
+  const c=card(ui.edit);if(!c)return;
+  const ta=grid.querySelector('#ed-'+c.id);const empty=!(ta?ta.value:c.text).trim();
+  const nb=cardVert(c.id,dir);
+  if(nb){commitEdit({silent:true});if(card(nb))startEdit(nb,{caret:dir>0?'start':'end'});else render();return;}
+  if(dir>0){if(empty)commitEdit();else if(!repeat){if(c.sp!==writeSp())return toast('過去のスピーチにはカードを追加できません（修正のみ）');commitEdit({then:'sibling'});}}
+}
+function commitEdit(opts){
+  opts=opts||{};
+  const r=R();const c=card(ui.edit);const before=ui.editBefore;const fresh=ui.editFresh;
+  ui.edit=null;ui.editBefore=null;ui.editFresh=false;
+  if(!c){if(!opts.silent)render();return;}
+  const ta=grid.querySelector(`#ed-${c.id}`);if(ta)c.text=ta.value;
+  c.text=c.text.replace(/\s+$/,'');
+  const hasKids=r.cards.some(x=>x.parent===c.id);
+  if(!c.text.trim()&&!hasKids){
+    r.cards=r.cards.filter(x=>x.id!==c.id);r.cards.forEach(x=>{if(x.links)x.links=x.links.filter(l=>l!==c.id);});
+    ui.sel=c.sp!==writeSp(r)&&c.parent&&card(c.parent)?c.parent:null;
+    if(snapCards(r)!==before){pushUndo(before);touch(r);}
+    if(!opts.silent)render();return;
+  }
+  if(snapCards(r)!==before){pushUndo(before);touch(r);}
+  void fresh;
+  if(opts.then==='sibling'){createCard({sp:c.sp,parent:c.parent,after:c});return;}
+  if(!opts.silent)render();
+}
+function editorInput(ta){const c=card(ui.edit);if(!c)return;c.text=ta.value;autosize(ta);wiresSoon();touchSoon();}
+function indent(dir){
+  const r=R();const c=card(ui.edit);if(!c)return;
+  const ta=grid.querySelector(`#ed-${c.id}`);if(ta)c.text=ta.value;
+  if(dir>0){
+    const sibs=r.cards.filter(x=>x.sp===c.sp&&(x.parent||null)===(c.parent||null)&&x.order<c.order).sort((a,b)=>b.order-a.order);
+    const prev=sibs[0];if(!prev)return toast('上に同じ階層のカードがないため下位にできません');
+    const ks=r.cards.filter(x=>x.parent===prev.id&&x.sp===c.sp);
+    c.parent=prev.id;c.order=(ks.length?Math.max(...ks.map(x=>x.order)):0)+1024;
+  }else{
+    const p=c.parent?card(c.parent):null;
+    if(!p||p.sp!==c.sp)return toast('これ以上は上位にできません');
+    c.parent=p.parent;
+    const sibs=r.cards.filter(x=>x.sp===c.sp&&(x.parent||null)===(p.parent||null)&&x.order>p.order).sort((a,b)=>a.order-b.order);
+    c.order=sibs[0]?(p.order+sibs[0].order)/2:p.order+1024;
+  }
+  render();
+}
+function replyTo(id){
+  const r=R();const c=card(id);if(!c)return;
+  const ws=writeSp(r);const sb=spBy(r);const ci=sb[c.sp].i;const cur=sb[ws].i;let target=null;
+  if(cur>ci)target=ws;
+  else return toast(`反論できるのは、現在のスピーチ（${sb[ws].short}）より前に出た論点です`);
+  if(!canTarget(target,id))return toast('質疑のメモには反駁できません。質疑で出た点に答えるときは、元の論点を選んでください');
+  if(ui.edit)commitEdit({silent:true});
+  createCard({sp:target,parent:id});
+}
+function subOf(id){const c=card(id);if(!c)return;if(ui.edit)commitEdit({silent:true});createCard({sp:c.sp,parent:id});}
+function delCard(id,beforeSnap){
+  const r=R();const c=card(id);if(!c)return;
+  const kill=new Set([id]);let grow=true;while(grow){grow=false;for(const x of r.cards){if(x.parent&&kill.has(x.parent)&&!kill.has(x.id)){kill.add(x.id);grow=true;}}}
+  // 削除後の選択は同じ列（同じスピーチ）の中だけ：一つ上、なければ一つ下。列が空になったら選択なし
+  // （反駁先など前のスピーチのカードには移さない。続けて Shift+矢印 で現在のスピーチに書き始められるように）
+  const st=lastSt;let nextSel=null;
+  if(st){const p=st.pos.get(id);if(p){let up=null,down=null;
+    for(const [cid,q] of st.pos){if(kill.has(cid)||q.col!==p.col)continue;
+      if(q.row<p.row&&(!up||q.row>up.row))up={cid,row:q.row};
+      if(q.row>p.row&&(!down||q.row<down.row))down={cid,row:q.row};}
+    nextSel=(up||down)?(up||down).cid:null;}}
+  const before=beforeSnap!=null?beforeSnap:snapCards(r);
+  r.cards=r.cards.filter(x=>!kill.has(x.id));r.cards.forEach(x=>{x.links=(x.links||[]).filter(l=>!kill.has(l));});
+  const changed=snapCards(r)!==before;if(changed){pushUndo(before);touch(r);}
+  ui.sel=nextSel;render();
+  toast(!changed?'書いているカードを消しました':kill.size>1?`${kill.size}枚を削除しました（Ctrl+Z で元に戻す）`:'削除しました（Ctrl+Z で元に戻す）');
+}
+/* 書いているカードを即座に消す（Shift+Delete） */
+function deleteEditing(){
+  const id=ui.edit;if(!id)return;const before=ui.editBefore;
+  // 移動先：同じ列の一つ上のカード。一番上なら一つ下（消えるカードの下位は除く）
+  const r=R();const st=lastSt;const kill=new Set([id]);let grow=true;
+  while(grow){grow=false;for(const x of r.cards){if(x.parent&&kill.has(x.parent)&&!kill.has(x.id)){kill.add(x.id);grow=true;}}}
+  let next=null;const p=st&&st.pos.get(id);
+  if(p){let up=null,down=null;
+    for(const [cid,q] of st.pos){if(q.col!==p.col||kill.has(cid))continue;
+      if(q.row<p.row&&(!up||q.row>up.row))up={cid,row:q.row};
+      if(q.row>p.row&&(!down||q.row<down.row))down={cid,row:q.row};}
+    next=(up||down)?(up||down).cid:null;}
+  ui.edit=null;ui.editBefore=null;ui.editFresh=false;
+  delCard(id,before);
+  if(next&&card(next))startEdit(next,{caret:'end'});
+}
+/* 反駁（前のスピーチのカードへの返答）を書いているか */
+function isReplyCard(c){const p=c&&c.parent&&card(c.parent);return !!(p&&p.sp!==c.sp);}
+/* 反駁先を矢印の方向の論点に変える。書きかけ（空）の反駁は通り過ぎた時点で消え、書いた反駁は残る */
+/* 反駁・質疑で答えられる相手の議論：このスピーチより前の、相手側の立論・反駁のカード（質疑のメモは除く）。
+   並びは上の行から、同じ行では新しいスピーチから */
+function targetList(spKey){
+  const st=lastSt;if(!st)return [];const sb=st.sb;const me=sb[spKey];if(!me)return [];
+  return [...st.pos.entries()].filter(([id])=>{const c=st.byId.get(id);const s=sb[c.sp];return s.i<me.i&&s.type!=='cx'&&s.side!==me.side&&c.text.trim();})
+    .sort((a,b)=>a[1].row-b[1].row||b[1].col-a[1].col).map(x=>x[0]);
+}
+/* 反駁先を上下の行へ動かす：↓ は一つ下の行、↑ は一つ上の行の、相手側の最も新しいスピーチの議論へ。
+   同じ行の中（同じ論点の流れの新旧）は Shift+←→ で動かす */
+function stepTarget(spKey,fromId,dir){
+  const L=targetList(spKey);const st=lastSt;if(!L.length)return null;
+  const p=st.pos.get(fromId);if(!p)return dir>0?L[0]:null;
+  let best=null;
+  for(const id of L){const q=st.pos.get(id);
+    if(dir>0?q.row<=p.row:q.row>=p.row)continue;
+    if(!best||(dir>0?q.row<best.q.row:q.row>best.q.row)||(q.row===best.q.row&&q.col>best.q.col))best={id,q};}
+  return best&&best.id;
+}
+/* 指定のカードと同じ行にある、スピーチ spKey の列のカード */
+function rowCardIn(spKey,id){
+  const st=lastSt;if(!st)return null;const col=st.colOf[spKey];const q=st.pos.get(id);if(col==null||!q)return null;
+  for(const [cid,p] of st.pos)if(p.col===col&&p.row===q.row)return cid;
+  return null;
+}
+/* 反駁先にしてよいカードか（前のスピーチで、質疑のメモではない） */
+function canTarget(spKey,id){const r=R();const sb=spBy(r);const c=card(id);if(!c)return false;const s=sb[c.sp],me=sb[spKey];return s.i<me.i&&(s.type!=='cx'||me.type==='cx');}
+function retargetEdit(dk){
+  const r=R();const c=card(ui.edit);const st=lastSt;if(!c||!st)return;
+  const tgt=card(c.parent);const sb=st.sb;const myI=sb[c.sp].i;
+  let nt=null;
+  if(dk==='up'||dk==='down')nt=stepTarget(c.sp,tgt.id,dk==='down'?1:-1);
+  else{
+    // 左右：反駁先の反論先（←）／反論（→）をたどる。自分の列より前の列だけが対象
+    const tp=st.pos.get(tgt.id);const myCol=st.pos.get(c.id)?.col;
+    if(tp&&myCol!=null){
+      const ok=id=>{const q=st.pos.get(id);return q&&q.col<myCol&&sb[st.byId.get(id).sp].type!=='cx';};
+      if(dk==='right'){
+        const ks=(st.kids.get(tgt.id)||[]).filter(k=>ok(k.id)&&st.pos.get(k.id).col>tp.col)
+          .sort((x,y)=>{const a=st.pos.get(x.id),b=st.pos.get(y.id);return a.col-b.col||a.row-b.row;});
+        if(ks.length)nt=ks[0].id;
+      }else if(tgt.parent&&ok(tgt.parent)&&st.pos.get(tgt.parent).col<tp.col)nt=tgt.parent;
+      if(!nt){const step=dk==='right'?1:-1;let best=null;
+        for(let col=tp.col+step;col>=0&&col<myCol;col+=step){
+          for(const [id,q] of st.pos){if(q.col!==col||!ok(id))continue;const d=Math.abs(q.row-tp.row)*2+(q.row<tp.row?1:0);if(!best||d<best.d)best={id,d};}
+          if(best)break;}
+        nt=best&&best.id;}
+    }
+  }
+  if(!nt||!card(nt)||!canTarget(c.sp,nt)){toast('その方向に反駁できる論点がありません');return;}
+  const sp=c.sp;
+  let ex=r.cards.find(x=>x.parent===nt&&x.sp===sp);
+  // 上下の移動では、移った行（論点の流れ）にこのスピーチのカードがすでにあればそれを開く（同じ流れに反駁を枝分かれさせない）
+  if(!ex&&(dk==='up'||dk==='down')){const rid=rowCardIn(sp,nt);if(rid&&rid!==c.id)ex=card(rid);}
+  if(!ex&&sp!==writeSp(r))return toast('過去のスピーチにはカードを追加できません（修正のみ）');
+  commitEdit({silent:true});
+  if(ex)startEdit(ex.id,{caret:'end'});else createCard({sp,parent:nt});
+  // 反駁先の論点と書いているカードの両方が丸ごと見えるように
+  const ce=card(ui.edit);if(ce)reveal([ce.parent,ce.id]);
+}
+function toggleFlag(id,f){mutate(()=>{const c=card(id);if(c)c[f]=!c[f];});}
+function startMode(m,id){if(ui.edit)commitEdit({silent:true});ui.mode=m;ui.modeSrc=id;ui.sel=id;render();}
+function cancelMode(){ui.mode=null;ui.modeSrc=null;ui.modeSp=null;grid.classList.remove('picking');grid.querySelectorAll('.nopick').forEach(x=>x.classList.remove('nopick'));renderHint();}
+/* 反駁先の候補：このスピーチより前に出た相手側の議論のうち、こちら側がまだ答えていない最初のもの */
+function suggestTarget(spKey){
+  const st=lastSt;if(!st)return null;const sb=st.sb;const me=sb[spKey];if(!me)return null;
+  const ansDirect=id=>(st.kids.get(id)||[]).some(k=>sb[k.sp].side===me.side&&sb[k.sp].type!=='cx'&&sb[k.sp].i<=me.i);
+  const answered=id=>{
+    if(ansDirect(id))return true;
+    const c=st.byId.get(id);
+    const down=x=>(st.kids.get(x.id)||[]).some(k=>k.sp===x.sp&&(ansDirect(k.id)||down(k)));
+    if(down(c))return true;
+    let x=c,g=0;while(x.parent&&st.byId.has(x.parent)&&g++<40){const pp=st.byId.get(x.parent);if(pp.sp!==x.sp)break;if(ansDirect(pp.id))return true;x=pp;}
+    return false;
+  };
+  const cands=[...st.pos.entries()].filter(([id])=>{const c=st.byId.get(id);const s=sb[c.sp];return s.i<me.i&&s.type!=='cx'&&s.side!==me.side&&!c.waive;})
+    .sort((a,b)=>a[1].row-b[1].row||a[1].col-b[1].col);
+  const un=cands.find(([id])=>!answered(id));
+  return un?un[0]:(cands[0]?cands[0][0]:null);
+}
+/* ；／＋ と列見出しの＋：立論・質疑では新しい論点、反駁では既出の論点への反駁 */
+function addPoint(spKey){
+  const r=R();const s=r.speeches.find(x=>x.key===spKey);if(!s)return;
+  if(s.type!=='reb')return createCard({sp:spKey,parent:null});
+  if(ui.edit)commitEdit({silent:true});
+  const sb=spBy(r);const sel=ui.sel&&card(ui.sel);
+  if(sel&&sb[sel.sp].i<sb[spKey].i&&canTarget(spKey,sel.id)){createCard({sp:spKey,parent:sel.id});if(ui.edit)reveal([sel.id,ui.edit]);return;}
+  const t=autoTarget(spKey);
+  if(!t)return toast('反駁できる論点がまだありません');
+  createCard({sp:spKey,parent:t});
+  if(ui.edit)reveal([t,ui.edit]);
+}
+/* 反駁の自動の反駁先：現在のスピーチの列がまだ空いている行のうち一番上の行で、
+   相手側（質疑を除く）の最も新しいスピーチの論点。なければ一番上の相手側の論点、それもなければ一番上の論点 */
+function autoTarget(spKey){
+  const st=lastSt;if(!st)return null;const sb=st.sb;const me=sb[spKey];if(!me)return null;
+  const myCol=st.colOf[spKey];const used=new Set();
+  for(const [,q] of st.pos)if(q.col===myCol)used.add(q.row);
+  const earlier=[...st.pos.entries()].filter(([id])=>{const c=st.byId.get(id);const s=sb[c.sp];return s.i<me.i&&s.type!=='cx'&&!c.waive&&c.text.trim();});
+  const opp=earlier.filter(([id])=>sb[st.byId.get(id).sp].side!==me.side&&!st.sqSet.has(id));
+  const pick=list=>list.slice().sort((a,b)=>a[1].row-b[1].row||b[1].col-a[1].col)[0];
+  const t=pick(opp.filter(([,q])=>!used.has(q.row)))||pick(opp)||pick(earlier);
+  return t?t[0]:null;
+}
+/* Shift+G：立論の一番上（全論点より上）に現状分析を追加 */
+function addAnalysis(){
+  const r=R();const ws=writeSp(r);const s=r.speeches.find(x=>x.key===ws);
+  if(!s||s.type!=='const')return toast('現状分析は立論のスピーチでのみ追加できます');
+  if(ui.edit)commitEdit({silent:true});
+  createCard({sp:ws,parent:null,kind:'sq'});
+}
+function completeMode(tid){
+  if(ui.mode==='replypick'){
+    const sp=ui.modeSp;const r=R();const sb=spBy(r);const t=card(tid);
+    if(!t||sb[t.sp].i>=sb[sp].i){toast('このスピーチより前に出た論点を選んでください');return;}
+    cancelMode();createCard({sp,parent:tid});return;
+  }
+  const src=ui.modeSrc;const m=ui.mode;cancelMode();
+  const r=R();const c=card(src);if(!c)return;
+  if(tid===src){toast('同じカードは選べません');return;}
+  if(m==='link'){
+    if(c.links.includes(tid))return toast('すでにリンクしています');
+    if(c.parent===tid)return toast('反論先と同じカードです');
+    mutate(()=>{c.links.push(tid);});toast('クロスアプライを追加しました');
+  }else{
+    let x=card(tid);let g=0;while(x&&g++<500){if(x.id===src)return toast('自分の下位・反論カードには付け替えられません');x=x.parent?card(x.parent):null;}
+    const sb=spBy(r);if(sb[card(tid).sp].i>sb[c.sp].i)toast('注意：反論先が後のスピーチです');
+    mutate(()=>{c.parent=tid;c.links=c.links.filter(l=>l!==tid);const ks=r.cards.filter(k=>k.parent===tid&&k.sp===c.sp&&k.id!==c.id);c.order=(ks.length?Math.max(...ks.map(k=>k.order)):0)+1024;});
+  }
+  ui.sel=src;applySelection();
+}
+function reorder(id,dir){
+  const r=R();const c=card(id);if(!c)return;
+  const sibs=r.cards.filter(x=>x.sp===c.sp&&(x.parent||null)===(c.parent||null)).sort((a,b)=>a.order-b.order);
+  const i=sibs.indexOf(c);const j=i+dir;if(j<0||j>=sibs.length)return;
+  mutate(()=>{const o=sibs[j].order;sibs[j].order=c.order;c.order=o;});ensureVisible(id);
+}
+function moveColumn(id,dir){
+  const r=R();const st=lastSt;const c=card(id);if(!c)return;
+  const vis=st.vis;const i=vis.findIndex(s=>s.key===c.sp);const t=vis[i+dir];if(!t)return;
+  const old=c.sp;const group=[c];const stack=[c];
+  while(stack.length){const x=stack.pop();for(const k of r.cards){if(k.parent===x.id&&k.sp===old){group.push(k);stack.push(k);}}}
+  mutate(()=>{group.forEach(g=>g.sp=t.key);});ensureVisible(id);toast(`${t.name}の列へ移しました`);
+}
+function setCur(key){
+  const r=R();if(!r.speeches.some(s=>s.key===key))return;
+  if(r.cur!==key){r.cur=key;touch(r);ui.sel=null;ui.resumeId=null;}
+  if(TM.run==='sp')stopRun();
+  timerReset();render();
+}
+function stepSpeech(d){
+  const r=R();const vis=r.speeches;
+  let i=vis.findIndex(s=>s.key===r.cur);if(i<0)i=0;const t=vis[i+d];if(t)setCur(t.key);
+}
+function navTarget(id,dir){
+  const st=lastSt;if(!st)return null;
+  const p=st.pos.get(id);if(!p)return null;let best=null;
+  const ent=[...st.pos.entries()];
+  if(dir==='up'||dir==='down'){
+    for(const [id,q] of ent){if(q.col!==p.col)continue;if(dir==='up'?q.row<p.row:q.row>p.row){const d=Math.abs(q.row-p.row);if(!best||d<best.d)best={id,d};}}
+  }else{
+    const step=dir==='left'?-1:1;
+    // まず反論のつながりをたどる：→ はこのカードへの反論へ、← は反論先へ
+    const me=st.byId.get(id);
+    if(dir==='right'){
+      const ks=(st.kids.get(id)||[]).filter(k=>st.pos.has(k.id)&&st.pos.get(k.id).col>p.col)
+        .sort((a,b)=>{const x=st.pos.get(a.id),y=st.pos.get(b.id);return x.col-y.col||x.row-y.row;});
+      if(ks.length)best={id:ks[0].id};
+    }else if(me&&me.parent&&st.pos.has(me.parent)&&st.pos.get(me.parent).col<p.col){best={id:me.parent};}
+    if(!best)for(let col=p.col+step;col>=0&&col<st.vis.length;col+=step){
+      for(const [id,q] of ent){if(q.col!==col)continue;const d=Math.abs(q.row-p.row)*2+(q.row<p.row?1:0);if(!best||d<best.d)best={id,d};}
+      if(best)break;
+    }
+  }
+  return best&&best.id;
+}
+function nav(dir){
+  const st=lastSt;if(!st)return;
+  if(!ui.sel){const first=[...st.pos.entries()].sort((a,b)=>a[1].row-b[1].row||a[1].col-b[1].col)[0];if(first){ui.sel=first[0];applySelection();ensureVisible(ui.sel);}return;}
+  const t=navTarget(ui.sel,dir);
+  if(t){ui.sel=t;applySelection();ensureVisible(t);}
+}
+/* 入力中に Shift+←→：反論／反論先のカードの入力へ移る */
+function editHorizontal(dir){
+  const id=ui.edit;if(!id)return;
+  const t=navTarget(id,dir>0?'right':'left');
+  if(!t)return;
+  commitEdit({silent:true});
+  if(card(t))startEdit(t,{caret:'end'});else render();
+}
+function nextDrop(){
+  const st=lastSt;if(!st||!st.drops.size)return toast('未反論のカードはありません');
+  const list=[...st.drops].filter(id=>st.pos.has(id)).sort((a,b)=>{const p=st.pos.get(a),q=st.pos.get(b);return p.row-q.row||p.col-q.col;});
+  if(!list.length)return toast('未反論のカードは非表示の列にあります');
+  let i=list.indexOf(ui.sel);const id=list[(i+1)%list.length];
+  ui.sel=id;applySelection();ensureVisible(id);
+}
+function doAct(act,ds,cid){
+  switch(act){
+    case 'setcur':return setCur(ds.sp);
+    case 'addroot':return addPoint(ds.sp);
+    case 'goto':ui.sel=ds.id;applySelection();return ensureVisible(ds.id);
+    case 'reply':return replyTo(cid);
+    case 'sub':return subOf(cid);
+    case 'edit':return startEdit(cid);
+    case 'link':return startMode('link',cid);
+    case 'reparent':return startMode('parent',cid);
+    case 'star':return toggleFlag(cid,'star');
+    case 'waive':return toggleFlag(cid,'waive');
+    case 'del':return delCard(cid);
+    case 'lateoff':{const c=card(cid);if(!c)return;const was=!!c.lateOff;mutate(()=>{c.lateOff=!was;});toast(was?'レイトの判定に戻しました':'レイトの判定を取り消しました（Ctrl+Z で元に戻す）');return;}
+    case 'unlink':return mutate(()=>{const c=card(cid);if(c)c.links=c.links.filter(l=>l!==ds.t);});
+  }
+}
+
+/* ---- pointer ---- */
+grid.addEventListener('pointerdown',e=>{
+  if(e.button!==0)return;
+  if(e.target.closest('textarea.ed'))return;
+  const actEl=e.target.closest('[data-act]');const cardEl=e.target.closest('.card');
+  if(ui.edit){e.preventDefault();commitEdit({silent:true});render();}
+  if(ui.mode){
+    e.preventDefault();
+    const ce=document.elementFromPoint(e.clientX,e.clientY)?.closest('.card');
+    if(ce)completeMode(ce.dataset.id);else cancelMode();
+    return;
+  }
+  const cid=cardEl&&cardEl.dataset.id;
+  if(actEl&&actEl.dataset.act==='lateoff'&&cid&&cid!==ui.sel){e.preventDefault();startEdit(cid,{caret:'end'});return;}
+  if(actEl){e.preventDefault();doAct(actEl.dataset.act,actEl.dataset,actEl.closest('.card')?.dataset.id||cid);return;}
+  if(cid){
+    e.preventDefault();
+    startEdit(cid,{caret:'end'});return;
+  }
+  // 何もない所：ドラッグなら表示の移動、クリックなら選択解除（#scroller 側で処理）
+});
+grid.addEventListener('click',e=>{
+  if(e.detail!==0)return; // keyboard activation only
+  const a=e.target.closest('[data-act]');if(!a)return;
+  doAct(a.dataset.act,a.dataset,a.closest('.card')?.dataset.id);
+});
+grid.addEventListener('input',e=>{if(e.target.matches('textarea.ed'))editorInput(e.target);});
+grid.addEventListener('keydown',e=>{
+  if(!e.target.matches('textarea.ed'))return;
+  if(e.isComposing||e.keyCode===229)return;
+  // Enter は改行（ブラウザ既定）。Ctrl/⌘+Enter で確定して同じ階層の次のカード
+  if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){
+    e.preventDefault();
+    if(!e.target.value.trim()){commitEdit();return;}
+    if(isFixing())return toast('過去のスピーチにはカードを追加できません（修正のみ）');
+    commitEdit({then:'sibling'});return;
+  }
+  // Shift+Delete：書いているカードを即座に消す（下位・反論ごと。Ctrl+Z で戻せる）。Delete だけは通常の文字削除
+  if(e.key==='Delete'&&e.shiftKey&&!e.altKey&&!e.ctrlKey&&!e.metaKey){e.preventDefault();deleteEditing();return;}
+  // Shift+矢印：反駁を書いている途中は反駁先を矢印の方向へ変える。それ以外は論点の移動（↓はいちばん下なら次のカードを追加）
+  if(e.shiftKey&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&e.key.startsWith('Arrow')){
+    e.preventDefault();
+    if(isReplyCard(card(ui.edit))){retargetEdit(e.key.slice(5).toLowerCase());return;}
+    if(e.key==='ArrowDown'||e.key==='ArrowUp')editVertical(e.key==='ArrowDown'?1:-1,e.repeat);
+    else editHorizontal(e.key==='ArrowRight'?1:-1);
+    return;
+  }
+  if(e.key==='Tab'){e.preventDefault();indent(e.shiftKey?-1:1);return;}
+  if(e.key==='Escape'){e.preventDefault();if(isFixing()){commitEdit({silent:true});resumeCurrent();}else commitEdit();return;}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){/* テキスト内の取り消しはブラウザに任せる */}
+});
+grid.addEventListener('focusout',e=>{
+  if(rendering||!e.target.matches('textarea.ed'))return;
+  const id=ui.edit;
+  setTimeout(()=>{if(ui.edit===id&&!grid.contains(document.activeElement)&&!rendering)commitEdit();},0);
+});
+
+/* ---- keyboard ---- */
+document.addEventListener('keydown',e=>{
+  if(!$('#overlay').hidden){if(e.key==='Escape'){e.preventDefault();closeDlg();}return;}
+  const t=e.target;if(t.matches&&t.matches('input,textarea,select,[contenteditable="true"]'))return;
+  if(e.isComposing)return;
+  const k=e.key;const mod=e.ctrlKey||e.metaKey;
+  if(t.closest&&t.closest('button')&&(k==='Enter'||k===' '))return;
+  if(mod&&k.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo();return;}
+  if(mod&&k.toLowerCase()==='y'){e.preventDefault();redo();return;}
+  const sel=ui.sel;
+  if(mod)return;
+  // ；／＋（JIS では同じキー、テンキーの＋も可）：現在のスピーチに新しい論点
+  if(k===';'||k==='+'||e.code==='NumpadAdd'){e.preventDefault();addPoint(writeSp());return;}
+  if(ui.mode==='replypick'&&k==='Enter'){e.preventDefault();if(ui.sel)completeMode(ui.sel);return;}
+  if(k==='Escape'){if(ui.mode)cancelMode();else if(ui.sel&&card(ui.sel)&&card(ui.sel).sp!==writeSp())resumeCurrent();else if(ui.sel){ui.sel=null;applySelection();}return;}
+  if(k.startsWith('Arrow')){
+    e.preventDefault();
+    // Alt+矢印：カード自体を動かす（↑↓並べ替え・←→隣の列へ）
+    if(sel&&e.altKey&&(k==='ArrowUp'||k==='ArrowDown'))return reorder(sel,k==='ArrowUp'?-1:1);
+    if(sel&&e.altKey&&(k==='ArrowLeft'||k==='ArrowRight'))return moveColumn(sel,k==='ArrowLeft'?-1:1);
+    if(e.altKey)return;
+    // Shift+↓ はいちばん下で追加まで行う。矢印だけ（Shift なし）は移動のみ
+    // 何も選んでいないときの Shift+矢印：現在のスピーチで書き始める（＋と同じ）
+    if(!sel&&e.shiftKey){if(!e.repeat)addPoint(writeSp());return;}
+    if(sel&&e.shiftKey&&(k==='ArrowUp'||k==='ArrowDown'))return selVertical(k==='ArrowDown'?1:-1,e.repeat);
+    return nav(k.slice(5).toLowerCase());
+  }
+  if(k===' '){e.preventDefault();toggleSpeechTimer();return;}
+  if(k==='['){stepSpeech(-1);return;}
+  if(k===']'){stepSpeech(1);return;}
+  if(k==='?'){openHelp();return;}
+  const lk=k.length===1?k.toLowerCase():k;
+  if(k==='G'&&e.shiftKey){e.preventDefault();addAnalysis();return;}
+  if(lk==='d'){nextDrop();return;}
+  if(lk==='f'){ui.focus=!ui.focus;applySelection();toast(ui.focus?'論点フォーカス：選んだ論点の帯だけを強調（F で解除）':'論点フォーカスを解除しました');return;}
+  if(/^[1-9]$/.test(k)){const r=R();const s=r.speeches[+k-1];if(s)setCur(s.key);return;}
+  if(!sel)return;
+  if(k==='Enter'||k==='F2'){e.preventDefault();startEdit(sel);return;}
+  if(lk==='r'){e.preventDefault();replyTo(sel);return;}
+  if(lk==='s'){e.preventDefault();subOf(sel);return;}
+  if(lk==='l'){startMode('link',sel);return;}
+  if(lk==='p'){startMode('parent',sel);return;}
+  if(k==='*'||lk==='q'){toggleFlag(sel,'star');return;}
+  if(lk==='x'){toggleFlag(sel,'waive');return;}
+  if(k==='Delete'&&e.shiftKey){e.preventDefault();delCard(sel);return;}
+  if(k==='Delete'||k==='Backspace'){e.preventDefault();toast('カードの削除は Shift+Delete です（Mac は Shift+fn+delete）');return;}
+});
+
+/* ================= タイマー ================= */
+const TM={run:null,t0:0,base:0,sp:0,key:null,prep:{}};
+function prepOf(r){if(!TM.prep[r.id])TM.prep[r.id]={aff:r.prepMin*60,neg:r.prepMin*60};return TM.prep[r.id];}
+function el(){return (performance.now()-TM.t0)/1000;}
+function val(w){if(TM.run===w)return TM.base-el();return w==='sp'?TM.sp:prepOf(R())[w];}
+function stopRun(){if(!TM.run)return;const v=val(TM.run);if(TM.run==='sp')TM.sp=v;else prepOf(R())[TM.run]=v;TM.run=null;}
+function startRun(w){stopRun();TM.run=w;TM.base=w==='sp'?TM.sp:prepOf(R())[w];TM.t0=performance.now();}
+function timerReset(){const r=R();const s=r.speeches.find(x=>x.key===r.cur);if(TM.run==='sp')TM.run=null;TM.sp=(s?s.min:0)*60;TM.key=r.cur;}
+function toggleSpeechTimer(){if(TM.run==='sp')stopRun();else startRun('sp');renderTimer();}
+function fmtT(sec){const over=sec<0;const v=over?Math.floor(-sec):Math.ceil(sec-1e-6);const m=Math.floor(v/60),s=v%60;return (over?'+':'')+m+':'+String(s).padStart(2,'0');}
+function renderTimer(){
+  const v=val('sp');const tv=$('#tmVal');tv.textContent=fmtT(v);
+  tv.classList.toggle('over',v<0);tv.classList.toggle('low',v>=0&&v<=30&&TM.sp!==0);
+  $('#tmGo').textContent=TM.run==='sp'?'停止':'開始';
+  for(const w of ['aff','neg']){const b=$(w==='aff'?'#prepAff':'#prepNeg');const x=val(w);$(w==='aff'?'#prepAffV':'#prepNegV').textContent=fmtT(x);b.classList.toggle('run',TM.run===w);b.classList.toggle('over',x<0);}
+}
+setInterval(()=>{if(TM.run)renderTimer();},200);
+$('#tmGo').onclick=toggleSpeechTimer;
+$('#tmReset').onclick=()=>{timerReset();renderTimer();};
+$('#prepAff').onclick=()=>{if(TM.run==='aff')stopRun();else startRun('aff');renderTimer();};
+$('#prepNeg').onclick=()=>{if(TM.run==='neg')stopRun();else startRun('neg');renderTimer();};
+$('#spPrev').onclick=()=>stepSpeech(-1);
+$('#spNext').onclick=()=>stepSpeech(1);
+
+/* ================= 上部の操作 ================= */
+$('#roundSel').onchange=e=>switchRound(e.target.value);
+function switchRound(id){if(ui.edit)commitEdit({silent:true});stopRun();S.curId=id;ui.sel=null;ui.mode=null;timerReset();saveSettings();render();}
+$('#btnUndo').onclick=undo;$('#btnRedo').onclick=redo;
+$('#btnDrop').onclick=nextDrop;$('#btnView2').onclick=()=>openView();
+$('#btnTop').onclick=()=>{S.settings.topHidden=!S.settings.topHidden;applySettings();saveSettings();wiresSoon();};
+$('#btnNew').onclick=openNew;$('#btnRound').onclick=openRound;$('#btnView').onclick=openView;$('#btnHelp').onclick=openHelp;
+window.addEventListener('resize',()=>{syncEdgePad();wiresSoon();});
+if(window.ResizeObserver)new ResizeObserver(()=>wiresSoon()).observe(grid);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>wiresSoon());
+
+/* ---- 拡大・縮小と表示の移動 ---- */
+const scroller=$('#scroller');
+let Z=1;
+/* 左右の余白：左から2列目・右から2列目の中心が画面の真ん中に来るところまで左右に動かせるようにする。
+   余白は #grid の座標（拡大率の影響を受ける前の値）。戻り値は左余白の増減（表示位置の補正用） */
+let padL=20,padR=20;
+function updateEdgePad(){
+  const hs=[...grid.querySelectorAll('.colhead')];if(!hs.length)return 0;
+  const vw=scroller.clientWidth/Z;
+  const cen=h=>h.offsetLeft+h.offsetWidth/2-padL;
+  const second=hs[Math.min(1,hs.length-1)],secondLast=hs[Math.max(0,hs.length-2)],last=hs[hs.length-1];
+  const contentW=last.offsetLeft+last.offsetWidth-9-padL;
+  const nL=Math.max(20,Math.round(vw/2-cen(second))),nR=Math.max(20,Math.round(vw/2-(contentW-cen(secondLast))));
+  const d=nL-padL;padL=nL;padR=nR;
+  grid.style.paddingLeft=nL+'px';grid.style.paddingRight=nR+'px';
+  return d;
+}
+function syncEdgePad(){const d=updateEdgePad();if(d)scroller.scrollLeft+=d*Z;}
+function setZoom(z,ax,ay){
+  z=Math.min(2.5,Math.max(1,Math.round(z*100)/100));
+  const rc=scroller.getBoundingClientRect();
+  const mx=ax==null?scroller.clientWidth/2:ax-rc.left, my=ay==null?scroller.clientHeight/2:ay-rc.top;
+  const cx=(scroller.scrollLeft+mx)/Z, cy=(scroller.scrollTop+my)/Z;
+  Z=z;grid.style.zoom=String(z);
+  const d=updateEdgePad();
+  scroller.scrollLeft=(cx+d)*z-mx;scroller.scrollTop=cy*z-my;wiresSoon();
+  $('#zVal').textContent=Math.round(z*100)+'%';
+  S.settings.zoom=z;saveSettings();
+}
+$('#zIn').onclick=()=>setZoom(Z*1.15);
+$('#zOut').onclick=()=>setZoom(Z/1.15);
+$('#zVal').onclick=()=>setZoom(1);
+// Ctrl/⌘＋ホイール、トラックパッドのピンチ（Chrome 等は ctrlKey 付きの wheel になる）：カーソル位置を中心に拡大縮小
+scroller.addEventListener('wheel',e=>{
+  if(!(e.ctrlKey||e.metaKey))return;
+  e.preventDefault();
+  setZoom(Z*Math.exp(-e.deltaY*(e.deltaMode===1?0.03:0.0012)),e.clientX,e.clientY);
+},{passive:false});
+// Safari のピンチ
+let gz=null;
+scroller.addEventListener('gesturestart',e=>{e.preventDefault();gz=Z;});
+scroller.addEventListener('gesturechange',e=>{e.preventDefault();if(gz!=null)setZoom(gz*e.scale,e.clientX,e.clientY);});
+scroller.addEventListener('gestureend',e=>{e.preventDefault();gz=null;});
+// 何もない所のドラッグ（または中ボタンのドラッグ）で上下左右に移動。動かさずに離したら選択解除
+let pan=null;
+scroller.addEventListener('pointerdown',e=>{
+  const onCard=e.target.closest('.card,[data-act],textarea,button,input,select');
+  if(e.button===1||(e.button===0&&!onCard)){
+    if(e.button===1)e.preventDefault();
+    pan={id:e.pointerId,x:e.clientX,y:e.clientY,sl:scroller.scrollLeft,st:scroller.scrollTop,moved:false,btn:e.button};
+  }
+});
+window.addEventListener('pointermove',e=>{
+  if(!pan||e.pointerId!==pan.id)return;
+  const dx=e.clientX-pan.x,dy=e.clientY-pan.y;
+  if(!pan.moved&&Math.abs(dx)+Math.abs(dy)>4){pan.moved=true;scroller.classList.add('panning');try{scroller.setPointerCapture(e.pointerId);}catch(_){}}
+  if(pan.moved){scroller.scrollLeft=pan.sl-dx;scroller.scrollTop=pan.st-dy;}
+});
+const endPan=e=>{
+  if(!pan||e.pointerId!==pan.id)return;
+  const p=pan;pan=null;scroller.classList.remove('panning');
+  if(!p.moved&&p.btn===0&&ui.sel&&!ui.mode){ui.sel=null;applySelection();}
+};
+window.addEventListener('pointerup',endPan);window.addEventListener('pointercancel',endPan);
+
+let toastT=0;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2200);}
+
+function applySettings(){
+  const st=S.settings;const root=document.documentElement.style;
+  document.body.classList.toggle('top-hidden',!!st.topHidden);
+  if(st.zoom&&st.zoom<1)st.zoom=1;
+  if(typeof setZoom==='function'&&st.zoom&&Math.abs(st.zoom-Z)>0.001){Z=st.zoom;grid.style.zoom=String(Z);const zv=$('#zVal');if(zv)zv.textContent=Math.round(Z*100)+'%';}
+  const tb=$('#btnTop');if(tb){tb.textContent=st.topHidden?'▾':'▴';tb.setAttribute('aria-expanded',String(!st.topHidden));tb.title=st.topHidden?'上の欄（試合名・論題・設定）を開く':'上の欄（試合名・論題・設定）を隠す';}
+  root.setProperty('--colw',{s:'152px',m:'186px',l:'234px'}[st.colw]||'186px');
+  root.setProperty('--fs',{s:'12px',m:'13px',l:'15px'}[st.fs]||'13px');
+}
+
+/* ================= ダイアログ ================= */
+let dlgReturn=null;
+function openDlg(title,html,mount){
+  if(ui.edit)commitEdit({silent:true});
+  dlgReturn=document.activeElement;
+  $('#dlgTitle').textContent=title;$('#dlgBody').innerHTML=html;$('#overlay').hidden=false;
+  if(mount)mount($('#dlgBody'));
+  const f=$('#dlgBody').querySelector('input,textarea,select,button');if(f)f.focus();
+}
+function closeDlg(){$('#overlay').hidden=true;$('#dlgBody').innerHTML='';render();if(dlgReturn&&dlgReturn.focus)try{dlgReturn.focus();}catch(e){}}
+$('#dlgClose').onclick=closeDlg;
+$('#overlay').addEventListener('pointerdown',e=>{if(e.target.id==='overlay')closeDlg();});
+
+function openNew(){
+  const r=R();
+  const fo=inferFormat(r);
+  openDlg('新しい試合',`<section><div class="fgrid">
+    <label class="wide">試合名<input id="n-title" placeholder="例：練習試合 第2試合"></label>
+    <label class="wide">論題<textarea id="n-motion" rows="2" placeholder="例：日本は〇〇すべきである"></textarea></label>
+    <label>肯定側チーム<input id="n-aff"></label><label>否定側チーム<input id="n-neg"></label></div></section>
+    <section><h3>試合形式</h3>
+    <div class="row" style="margin-bottom:8px"><label><input type="radio" name="n-src" value="build" checked> 回数と時間から作る</label><label><input type="radio" name="n-src" value="copy"> いまの試合と同じ（名称・時間の手直しも含む）</label></div>
+    <div id="n-fb">${fmtBuilderHTML(fo)}</div>
+    <p class="note">作成後も「試合設定」で形式の変更や、スピーチ名・時間の個別の手直しができます。</p></section>
+    <div class="row"><button class="btn primary" id="n-ok">作成する</button><button class="btn" id="n-cancel">キャンセル</button></div>`,b=>{
+    $('#n-motion',b).value=r.motion||'';
+    const getFmt=mountBuilder($('#n-fb',b),fo);
+    b.querySelectorAll('input[name=n-src]').forEach(i=>i.onchange=()=>{const copy=b.querySelector('input[name=n-src]:checked').value==='copy';$('#n-fb',b).style.opacity=copy?.4:1;$('#n-fb',b).querySelectorAll('select,input,button').forEach(x=>x.disabled=copy);});
+    $('#n-ok',b).onclick=()=>{
+      const copy=b.querySelector('input[name=n-src]:checked').value==='copy';
+      const meta={title:$('#n-title',b).value.trim()||'新しい試合',motion:$('#n-motion',b).value.trim(),aff:$('#n-aff',b).value.trim(),neg:$('#n-neg',b).value.trim()};
+      if(copy){meta.speeches=r.speeches;meta.prepMin=r.prepMin;meta.cxMemo=!!r.cxMemo;}
+      else{const o=getFmt();meta.speeches=buildFormat(o);meta.prepMin=o.prep;meta.cxMemo=!!(o.cx&&o.cxMemo);}
+      const nr=newRound('std',meta);
+      S.rounds.push(nr);stopRun();S.curId=nr.id;ui.sel=null;timerReset();touch(nr);saveSettings();closeDlg();toast('新しい試合を作成しました');
+    };
+    $('#n-cancel',b).onclick=closeDlg;
+  });
+}
+
+function openRound(){
+  const r=R();
+  openDlg('試合設定',`<section><h3>試合情報</h3><div class="fgrid">
+    <label>試合名<input id="f-title"></label><label>日付<input type="date" id="f-date"></label>
+    <label class="wide">論題<textarea id="f-motion" rows="2"></textarea></label>
+    <label>肯定側チーム<input id="f-aff"></label><label>否定側チーム<input id="f-neg"></label></div></section>
+    <section><h3>試合形式を変える</h3>
+    <div id="f-fb">${fmtBuilderHTML(inferFormat(r))}</div>
+    <div class="row" style="margin-top:8px"><button class="btn primary" id="f-apply">この形式に変更</button></div>
+    <div id="f-warn"></div>
+    <p class="note">書き込み済みのカードはそのまま残ります（同じスピーチの列に入ります）。スピーチ名・時間を手直ししていた場合は、上の設定で置き換わります。</p></section>
+    <section><h3>スピーチの順番（個別に手直し）</h3>
+    <table class="fmt"><thead><tr><th>名称</th><th>略称</th><th>側</th><th>種類</th><th>分</th><th></th></tr></thead><tbody id="fmtBody"></tbody></table>
+    <div class="row" style="margin-top:8px"><button class="btn" id="fmtAdd">スピーチを追加</button></div>
+    <p class="note">カードが入っているスピーチは削除できません（先にカードを移すか削除してください）。</p></section>
+    <section><h3>準備時間</h3><div class="row">各チーム <input type="number" id="f-prep" min="0" max="60" step="0.5" style="width:80px"> 分 <button class="btn" id="f-prepReset">準備時間をリセット</button></div></section>
+    <section><div class="row"><button class="btn danger" id="f-del">この試合を削除</button><span class="note" style="margin:0">削除は取り消せません。必要なら先に「表示・保存」からJSONを保存してください。</span></div></section>`,b=>{
+    const bind=(id,key)=>{const i=$(id,b);i.value=r[key]||'';i.oninput=()=>{r[key]=i.value;touch(r);renderTop();};};
+    bind('#f-title','title');bind('#f-date','date');bind('#f-motion','motion');bind('#f-aff','aff');bind('#f-neg','neg');
+    const pr=$('#f-prep',b);pr.value=r.prepMin;pr.oninput=()=>{const v=Math.max(0,+pr.value||0);r.prepMin=v;touch(r);};
+    $('#f-prepReset',b).onclick=()=>{stopRun();delete TM.prep[r.id];renderTimer();toast('準備時間をリセットしました');};
+    const drawFmt=()=>{
+      const cnt={};r.cards.forEach(c=>cnt[c.sp]=(cnt[c.sp]||0)+1);
+      $('#fmtBody',b).innerHTML=r.speeches.map((s,i)=>`<tr>
+        <td><input data-i="${i}" data-f="name" value="${esc(s.name)}" aria-label="名称"></td>
+        <td><input data-i="${i}" data-f="short" value="${esc(s.short)}" aria-label="略称" style="width:72px"></td>
+        <td><select data-i="${i}" data-f="side" aria-label="側"><option value="aff"${s.side==='aff'?' selected':''}>肯定</option><option value="neg"${s.side==='neg'?' selected':''}>否定</option></select></td>
+        <td><select data-i="${i}" data-f="type" aria-label="種類">${Object.entries(TYPE_NAME).map(([k,v])=>`<option value="${k}"${s.type===k?' selected':''}>${v}</option>`).join('')}</select></td>
+        <td><input class="n" type="number" min="0" max="60" step="0.5" data-i="${i}" data-f="min" value="${s.min}" aria-label="分"></td>
+        <td class="ops"><button class="btn icon" data-mv="${i}" data-d="-1" aria-label="上へ"${i===0?' disabled':''}>↑</button><button class="btn icon" data-mv="${i}" data-d="1" aria-label="下へ"${i===r.speeches.length-1?' disabled':''}>↓</button><button class="btn icon" data-rm="${i}" aria-label="削除"${cnt[s.key]?` disabled title="カード${cnt[s.key]}枚"`:''}>×</button></td></tr>`).join('');
+    };
+    drawFmt();
+    const fb=$('#fmtBody',b);
+    fb.oninput=fb.onchange=e=>{const t=e.target;if(!t.dataset.f)return;const s=r.speeches[+t.dataset.i];const f=t.dataset.f;s[f]=f==='min'?Math.max(0,+t.value||0):t.value;touch(r);if(s.key===r.cur&&!TM.run)timerReset();renderTop();renderGrid();renderTimer();};
+    fb.onclick=e=>{const t=e.target.closest('button');if(!t||t.disabled)return;
+      if(t.dataset.mv!=null){const i=+t.dataset.mv,j=i+(+t.dataset.d);const a=r.speeches;[a[i],a[j]]=[a[j],a[i]];}
+      else if(t.dataset.rm!=null){if(r.speeches.length<=1)return toast('スピーチは1つ以上必要です');const s=r.speeches.splice(+t.dataset.rm,1)[0];if(r.cur===s.key){r.cur=r.speeches[0].key;timerReset();}}
+      touch(r);drawFmt();renderTop();renderGrid();renderTimer();};
+    $('#fmtAdd',b).onclick=()=>{const last=r.speeches[r.speeches.length-1];const side=last&&last.side==='aff'?'neg':'aff';r.speeches.push(spk('s'+uid().slice(0,6),SIDE_NAME[side]+'反駁',SIDE_CH[side]+'反','' +side,'reb',4));touch(r);drawFmt();renderGrid();};
+    const getFmt=mountBuilder($('#f-fb',b),inferFormat(r),()=>{const w=$('#f-warn',b);if(w)w.innerHTML='';});
+    $('#f-apply',b).onclick=()=>{
+      const o=getFmt();const L=buildFormat(o);const keys=new Set(L.map(s=>s.key));
+      const lost={};r.cards.forEach(c=>{if(!keys.has(c.sp))lost[c.sp]=(lost[c.sp]||0)+1;});
+      const lk=Object.keys(lost);
+      if(lk.length){
+        const nm=k=>(r.speeches.find(s=>s.key===k)||{name:k}).name;
+        $('#f-warn',b).innerHTML=`<div class="fmtwarn">変更できません。新しい形式にないスピーチにカードがあります：${lk.map(k=>esc(nm(k))+'（'+lost[k]+'枚）').join('、')}。カードを別の列へ移す（Alt+←→）か削除してから変更してください。</div>`;
+        return;
+      }
+      r.speeches=L;r.prepMin=o.prep;pr.value=r.prepMin;
+      const hadCx=r.cards.some(c=>(L.find(x=>x.key===c.sp)||{}).type==='cx');
+      r.cxMemo=!!(o.cx&&o.cxMemo);
+      if(hadCx&&!r.cxMemo)setTimeout(()=>toast('質疑のメモは消さずに非表示にしています（「表示」で再表示できます）'),2300);
+      if(!keys.has(r.cur))r.cur=L[0].key;
+      stopRun();delete TM.prep[r.id];timerReset();touch(r);drawFmt();render();toast(fmtLabel(o)+' に変更しました');
+    };
+    $('#f-del',b).onclick=()=>{
+      const btn=$('#f-del',b);if(btn.dataset.arm!=='1'){btn.dataset.arm='1';btn.textContent='もう一度押すと削除します';return;}
+      const id=r.id;S.rounds=S.rounds.filter(x=>x.id!==id);delete hist[id];delete TM.prep[id];cloudDelete(id);
+      if(!S.rounds.length)S.rounds.push(newRound('std'));
+      S.curId=S.rounds.slice().sort((a,b2)=>b2.updatedAt-a.updatedAt)[0].id;stopRun();timerReset();ui.sel=null;saveLocal();saveSettings();closeDlg();toast('試合を削除しました');
+    };
+  });
+}
+
+function toMarkdown(r){
+  const st=analyze(r);const sb=st.sb;const out=[];
+  out.push('# '+r.title);
+  if(r.motion)out.push('','論題：'+r.motion);
+  out.push('','肯定側：'+(r.aff||'—')+' ／ 否定側：'+(r.neg||'—')+(r.date?' ／ '+r.date:''));
+  out.push('','スピーチ順：'+r.speeches.map(s=>s.short).join(' → '));
+  const line=(c,d)=>{
+    const s=sb[c.sp];const flags=[c.star?'★':'',st.late.has(c.id)?'【レイト】':st.lateOff.has(c.id)?'【レイト取消】':'',st.drops.has(c.id)?'【未反論】':'',c.waive?'【放棄】':''].join('');
+    const p=c.parent?st.byId.get(c.parent):null;
+    const tgt=p&&p.sp!==c.sp?`（→ ${st.tags.get(p.id)}）`:'';
+    const lk=(c.links||[]).filter(l=>st.byId.has(l)).map(l=>st.tags.get(l));
+    const txt=c.text.replace(/\n/g,' / ');
+    out.push('  '.repeat(d)+`- [${s.short}] ${st.tags.get(c.id)} ${st.kinds.get(c.id)}${tgt}${flags}：${txt}${lk.length?`（⇢ ${lk.join('、')} にも適用）`:''}`);
+    for(const k of st.kids.get(c.id)||[])line(k,d+1);
+  };
+  for(const rc of st.roots){out.push('','## '+st.tags.get(rc.id)+' '+snip(rc.text.split('\n')[0],40));line(rc,0);}
+  return out.join('\n')+'\n';
+}
+function safeName(s){return String(s||'flow').replace(/[\\/:*?"<>|\s]+/g,'_').slice(0,60);}
+let dl=null;
+const IN_CLAUDE=!!(window.claude&&typeof window.claude.use==='function');
+async function saveFile(name,data){
+  if(!dl){
+    if(IN_CLAUDE)return false;
+    try{const url=URL.createObjectURL(new Blob([data],{type:name.endsWith('.json')?'application/json':'text/markdown'}));
+      const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('保存しました');return true;}
+    catch(e){toast('保存できませんでした。コピーをお使いください');return false;}
+  }
+  try{await dl.save({filename:name,data});toast('保存しました');return true;}
+  catch(e){const c=e&&e.code;if(c==='declined')toast('保存を取り消しました');else if(c==='rate_limited')toast('少し待ってからもう一度お試しください');else toast('ここでは保存できません。コピーをお使いください');return false;}
+}
+async function copyText(t,label){try{await navigator.clipboard.writeText(t);toast(label+'をコピーしました');}catch(e){toast('コピーできませんでした。下の欄から手動でコピーしてください');const ta=$('#v-out');if(ta){ta.hidden=false;ta.value=t;ta.select();}}}
+function openView(){
+  const r=R();const st=S.settings;
+  const seg=(name,cur,opts)=>`<span class="seg" role="radiogroup">${opts.map(([v,l])=>`<label><input type="radio" name="${name}" value="${v}"${cur===v?' checked':''}>${l}</label>`).join('')}</span>`;
+  openDlg('表示・保存',`<section><h3>表示</h3><div class="row" style="gap:14px">
+    <span>列の幅 ${seg('colw',st.colw,[['s','狭い'],['m','標準'],['l','広い']])}</span>
+    <span>文字 ${seg('fs',st.fs,[['s','小'],['m','標準'],['l','大']])}</span></div>
+    <div class="row" style="gap:16px;margin-top:10px">
+      <label><input type="checkbox" id="tgDrop"${st.showDrops?' checked':''}> 未反論の印を表示</label>
+      <label><input type="checkbox" id="tgCx"${R().cxMemo?' checked':''}> この試合で質疑をメモする（質疑の列を表示）</label>
+      <label><input type="checkbox" id="tgFocus"${ui.focus?' checked':''}> 論点フォーカス（<kbd>F</kbd>）</label>
+    </div></section>
+    <section><h3>書き出し（この試合）</h3><div class="row">
+    ${(dl||!IN_CLAUDE)?'<button class="btn" id="v-md">Markdown を保存</button><button class="btn" id="v-json">JSON（バックアップ）を保存</button>':''}
+    <button class="btn" id="v-cmd">Markdown をコピー</button><button class="btn" id="v-cjson">JSON をコピー</button>
+    ${(dl||!IN_CLAUDE)?'<button class="btn" id="v-all">全試合を JSON で保存</button>':''}</div>
+    <textarea id="v-out" rows="5" hidden style="width:100%;margin-top:8px" aria-label="書き出し結果"></textarea>
+    <p class="note">Markdown は論点ごとに反論のつながりを字下げで表した要約です。JSON は読み込み直せるバックアップです。</p></section>
+    <section><h3>読み込み</h3><div class="row"><input type="file" id="v-file" accept=".json,application/json" aria-label="JSONファイルを選ぶ"></div>
+    <textarea id="v-paste" rows="3" style="width:100%;margin-top:8px" placeholder="または、コピーした JSON をここに貼り付け" aria-label="JSONを貼り付け"></textarea>
+    <div class="row" style="margin-top:6px"><button class="btn" id="v-imp">貼り付けた JSON を読み込む</button></div>
+    <p class="note">読み込んだ試合は新しい試合として追加されます（既存の試合は上書きしません）。</p></section>
+    <section><h3>保存先</h3><p class="note" id="v-save" style="margin:0"></p></section>`,b=>{
+    $('#tgDrop',b).onchange=e=>{S.settings.showDrops=e.target.checked;saveSettings();renderGrid();};
+    $('#tgCx',b).onchange=e=>{const r=R();r.cxMemo=e.target.checked;touch(r);renderGrid();};
+    $('#tgFocus',b).onchange=e=>{ui.focus=e.target.checked;applySelection();};
+    b.querySelectorAll('input[name=colw],input[name=fs]').forEach(i=>i.onchange=()=>{S.settings[i.name]=i.value;applySettings();saveSettings();wiresSoon();});
+    const md=()=>toMarkdown(r);const js=()=>JSON.stringify({app:'debate-flow',v:1,rounds:[r]},null,1);
+    if(dl||!IN_CLAUDE){$('#v-md',b).onclick=()=>saveFile(safeName(r.title)+'.md',md());$('#v-json',b).onclick=()=>saveFile(safeName(r.title)+'.json',js());
+      $('#v-all',b).onclick=()=>saveFile('flow_all_'+today()+'.json',JSON.stringify({app:'debate-flow',v:1,rounds:S.rounds},null,1));}
+    $('#v-cmd',b).onclick=()=>copyText(md(),'Markdown');$('#v-cjson',b).onclick=()=>copyText(js(),'JSON');
+    $('#v-file',b).onchange=async e=>{const f=e.target.files[0];if(!f)return;try{importJSON(await f.text());}catch(err){toast('ファイルを読み込めませんでした');}};
+    $('#v-imp',b).onclick=()=>importJSON($('#v-paste',b).value);
+    $('#v-save',b).textContent=store.ok?'あなたの Claude アカウントに保存しています。保存は使う人ごとに分かれていて、ほかの人（このページを共有した人・された人を含む）からは見えません。別の端末でこのページを開いても同じ試合が出ます。'
+      :'このブラウザにだけ保存しています（使う人ごと・ブラウザごとに別々で、ほかの人からは見えません）。ブラウザのデータ消去や別のパソコンでは消えて見えるため、大事な試合は JSON で保存してください。';
+  });
+}
+function importJSON(text){
+  let data;try{data=JSON.parse(text);}catch(e){return toast('JSON の形式が正しくありません');}
+  const list=Array.isArray(data)?data:Array.isArray(data.rounds)?data.rounds:[data];
+  let n=0,last=null;
+  for(const raw of list){const r=normRound(JSON.parse(JSON.stringify(raw)));if(!r)continue;if(S.rounds.some(x=>x.id===r.id))r.id=uid();delete r.sample;r.updatedAt=Date.now();S.rounds.push(r);touch(r);n++;last=r;}
+  if(!n)return toast('読み込める試合が見つかりませんでした');
+  S.curId=last.id;stopRun();timerReset();ui.sel=null;saveSettings();closeDlg();toast(`${n}件の試合を読み込みました`);
+}
+function openHelp(){
+  const K=(a,b)=>`<dt>${a}</dt><dd>${b}</dd>`;
+  openDlg('使い方とショートカット',`<section><h3>見方</h3><div class="row" style="gap:16px;font-size:12px">
+    <span><span class="sb aff">肯</span> 肯定側（四角・青）</span><span><span class="sb neg">否</span> 否定側（丸・オレンジ）</span>
+    <span><svg width="30" height="10" aria-hidden="true"><path d="M1 5 H24" stroke="currentColor" stroke-width="1.6"/><path d="M23 1 L29 5 L23 9 z" fill="currentColor"/></svg> 反論・延長</span>
+    <span><svg width="30" height="10" aria-hidden="true"><path d="M1 5 H28" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4"/></svg> クロスアプライ</span>
+    <span><span class="drop">! 未反論</span> 相手が答えていない</span>
+    <span><span class="late">レイト</span> 答える機会のあった反駁で答えず、後の反駁で出した遅い反論（反論された自分の論点を後から立て直す延長も含む。薄い取り消し線付き）。審査員が認めなかった場合は、カードをクリックして印の「× 取り消す」を押す</span></div>
+    <p class="note">カードの番号「肯1-2·否a」は「肯1-2 への否定側の a 番目」。前半の「肯1-2」を押すと反論先へ移ります。</p></section>
+  <section><h3>基本の流れ</h3><p style="margin:0">列がスピーチ（左から時系列）、横の帯が1つの論点です。反論は反論先と同じ高さに置かれ、矢印でつながります。カード上部の「→ 肯1-2 …」が反論先、色と記号（肯＝四角、否＝丸）が側を示します。<br>スピーチが始まったら列見出し（または <kbd>]</kbd>）で「現在のスピーチ」を切り替えます。新しいカードは現在のスピーチの列にだけ入るので、反駁中に誤って立論の列へ書き込むことはありません。<br>過去のスピーチのカードはクリックすると修正でき、<kbd>Esc</kbd> で現在のスピーチの記入に戻ります。</p></section>
+  <section><h3>書く（カードを選んでいるとき）</h3><div class="kcols"><dl class="keys">
+    ${K('<kbd>；</kbd> / <kbd>＋</kbd>（何も選んでいなければ <kbd>Shift</kbd>+<kbd>矢印</kbd> でも可）','立論・質疑：現在のスピーチに新しい論点。反駁：一番上の論点への反駁をすぐ書き始める（現在のスピーチでまだ書いていない一番上の行の、相手側の最も新しいスピーチの論点）。反駁先は <kbd>Shift</kbd>+<kbd>矢印</kbd> で変えられ、空のまま通り過ぎた反駁は消える')}${K('<kbd>Shift</kbd>+<kbd>G</kbd>','立論で現状分析を追加（全論点より上に置かれる。番号は「肯現」「否現」、未反論の表示や反駁先の自動選択からは外れる）。カードを書いている途中は通常の「G」入力になるので、Esc で確定してから押す')}${K('<kbd>R</kbd>','選んだカードに反論（現在のスピーチの列に入る。現在のスピーチより前の論点のみ）')}${K('<kbd>S</kbd>','選んだカードの下位論点')}${K('クリック / <kbd>Enter</kbd> / <kbd>F2</kbd>','書き直す。過去のスピーチのカードは「修正中」になり、<kbd>Esc</kbd> で現在のスピーチの記入に戻る（新しいカードは現在のスピーチにだけ追加される）')}
+  </dl><dl class="keys">
+    ${K('<kbd>L</kbd>','クロスアプライ（別の論点にも適用）')}${K('<kbd>P</kbd>','反論先を付け替える')}${K('<kbd>*</kbd> / <kbd>Q</kbd>','重要マーク')}${K('<kbd>X</kbd>','放棄・譲歩として薄く表示')}${K('<kbd>Shift</kbd>+<kbd>Delete</kbd>（Mac は <kbd>Shift</kbd>+<kbd>fn</kbd>+<kbd>delete</kbd>）','削除（下位・反論ごと。Ctrl+Z で戻せる）')}
+  </dl></div></section>
+  <section><h3>入力中</h3><dl class="keys">${K('<kbd>Enter</kbd>','改行')}${K('<kbd>Esc</kbd> / 枠の外をクリック','確定（空のカードは消える）')}${K('<kbd>Ctrl</kbd>+<kbd>Enter</kbd>（Mac は <kbd>⌘</kbd>+<kbd>Enter</kbd>）','確定して、同じ階層に次のカード（同じ反論先への2つ目の反論など）')}${K('<kbd>↑↓←→</kbd>','文中のカーソル移動（ふつうの文字入力と同じ）')}${K('<kbd>Shift</kbd>+<kbd>矢印</kbd>（反駁を書いているとき）','反駁先の論点を矢印の方向へ変える。↑↓ は一つ上／下の行（論点の流れ）の相手の最も新しい議論へ、←→ は同じ行の中で反論先／反論へ。書きかけで空の反駁は通り過ぎた時点で消え、書いた反駁は残る。行き先にこのスピーチの反駁がすでにあれば、それを書き直す')}${K('<kbd>Shift</kbd>+<kbd>↑↓</kbd>（論点・下位論点を書いているとき）','上下のカードの入力へ移る。いちばん下で <kbd>Shift</kbd>+<kbd>↓</kbd> を押すと、同じ階層に次のカードを追加')}${K('<kbd>Shift</kbd>+<kbd>Delete</kbd>','書いているカードをすぐに消す（下位・反論ごと。<kbd>Ctrl</kbd>+<kbd>Z</kbd> で戻せる。Mac は <kbd>Shift</kbd>+<kbd>fn</kbd>+<kbd>delete</kbd>）。<kbd>Delete</kbd> だけなら通常の文字削除')}${K('<kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>','すぐ上のカードの下位へ／ひとつ上の階層へ')}</dl><p class="note">日本語の変換中のキーは、どれも確定や移動に使われません。</p></section>
+  <section><h3>動く・見る</h3><div class="kcols"><dl class="keys">
+    ${K('<kbd>Shift</kbd>+<kbd>↑↓</kbd>','同じ列の上下へ。いちばん下で <kbd>Shift</kbd>+<kbd>↓</kbd> を押すと新しいカードを追加（反駁なら、反駁先の一つ下の論点への反駁）')}${K('<kbd>Shift</kbd>+<kbd>→</kbd>','このカードへの反論へ（なければ右の列）')}${K('<kbd>Shift</kbd>+<kbd>←</kbd>','反論先へ（なければ左の列）')}${K('矢印のみ','移動だけ（追加はしない）')}${K('<kbd>Alt</kbd>+<kbd>↑↓</kbd>','カードを同じ階層で並べ替え')}${K('<kbd>Alt</kbd>+<kbd>←→</kbd>','カードを隣のスピーチ列へ移す')}
+  </dl><dl class="keys">
+    ${K('<kbd>[</kbd> <kbd>]</kbd> / <kbd>1</kbd>〜<kbd>9</kbd>','現在のスピーチを切替')}${K('<kbd>Space</kbd>','スピーチタイマー開始・停止')}${K('<kbd>D</kbd>','次の未反論カードへ')}${K('<kbd>F</kbd>','論点フォーカス（選んだ帯だけ強調）')}${K('<kbd>Ctrl</kbd>+<kbd>Z</kbd>','元に戻す（<kbd>Shift</kbd> 併用でやり直し）')}${K('<kbd>Esc</kbd>','選択・モードの解除')}${K('質疑','試合の順番とタイマーには入るが、ふだんはメモしない。その間は質問されている立論（否定側質疑なら肯定側立論、肯定側質疑なら否定側立論）に書き足せる。質疑そのものをメモしたい試合は「表示」または試合形式の「質疑のメモ」で「メモする」にする')}${K('<kbd>Ctrl</kbd>/<kbd>⌘</kbd>＋ホイール、ピンチ','フローの拡大・縮小（カーソルの位置を中心に。100%〜250%）。「−／＋」ボタンでも可')}${K('何もない所をドラッグ','フローを上下左右に動かす（中ボタンのドラッグはどこでも可）。ホイールで上下、<kbd>Shift</kbd>＋ホイールで左右')}
+  </dl></div></section>
+  <section><h3>番号と種類</h3><p style="margin:0">論点は「肯1」「否1」、下位は「肯1-2」、反論は「肯1·否a」（肯1への否定側の a 番目）と付きます。種類は 論点／下位／反論／再反論／延長（同じ側が後のスピーチで伸ばす）／質疑 を自動で判定します。<br>「未反論」は、そのカードより後の相手側スピーチ（質疑を除く）が始まっているのに、相手がまだ答えていないカードに付きます。下位論点のどれか、または親の論点に反論があれば答えたものとみなします。</p></section>`);
+}
+
+/* ================= 保存 ================= */
+const LS='debate-flow.v1';
+function saveLocal(){try{localStorage.setItem(LS,JSON.stringify({rounds:S.rounds,curId:S.curId,settings:S.settings}));}catch(e){}}
+function loadLocal(){try{const d=JSON.parse(localStorage.getItem(LS)||'null');if(d&&Array.isArray(d.rounds)){S.rounds=d.rounds.map(normRound).filter(Boolean);d.rounds.forEach((x,i)=>{if(x&&x.sample&&S.rounds[i])S.rounds[i].sample=true;});S.curId=d.curId;if(d.settings)Object.assign(S.settings,d.settings);}}catch(e){}}
+let localT=0;function saveLocalSoon(){clearTimeout(localT);localT=setTimeout(saveLocal,300);}
+function touch(r){r.updatedAt=Date.now();r.touched=true;saveLocalSoon();scheduleCloud(r.id);}
+let touchT=0;function touchSoon(){clearTimeout(touchT);touchT=setTimeout(()=>{const r=R();if(r)touch(r);},500);}
+let setT=0;function saveSettings(){saveLocalSoon();clearTimeout(setT);setT=setTimeout(cloudSettings,1200);}
+
+const store={db:null,uid:null,ok:false,tm:{},inflight:{},again:{},retried:{}};
+function setSave(state,text){const s=$('#save');s.className=state;$('#saveTx').textContent=text;}
+function userCol(){return store.db.collection('data/users/'+store.uid);}
+function scheduleCloud(id){if(!store.ok)return;clearTimeout(store.tm[id]);store.tm[id]=setTimeout(()=>cloudWrite(id),1200);setSave('saving','保存待ち…');}
+async function cloudWrite(id){
+  if(!store.ok)return;
+  if(store.inflight[id]){store.again[id]=true;return;}
+  const r=S.rounds.find(x=>x.id===id);if(!r)return;
+  if(r.sample&&!r.touched)return;
+  store.inflight[id]=true;setSave('saving','保存中…');
+  try{
+    const body=Object.assign({},r);delete body.touched;
+    await userCol().doc(id).set({kind:'round',updatedAt:r.updatedAt,title:String(r.title).slice(0,200),json:JSON.stringify(body)});
+    store.retried[id]=false;setSave('cloud','保存済み');
+  }catch(e){cloudErr(e,()=>cloudWrite(id),id);}
+  finally{store.inflight[id]=false;if(store.again[id]){store.again[id]=false;cloudWrite(id);}}
+}
+async function cloudDelete(id){if(!store.ok)return;clearTimeout(store.tm[id]);try{await userCol().doc(id).delete();setSave('cloud','保存済み');}catch(e){cloudErr(e,()=>cloudDelete(id),'del'+id);}}
+async function cloudSettings(){if(!store.ok)return;try{await userCol().doc('_settings').set({kind:'settings',json:JSON.stringify({settings:S.settings,curId:S.curId})});}catch(e){/* 表示設定は端末にも保存済み */}}
+function cloudErr(e,retry,key){
+  const c=e&&e.code;
+  if(c==='unavailable'&&!store.retried[key]){store.retried[key]=true;setTimeout(retry,600+Math.random()*900);return;}
+  if(c==='quota_exceeded'){setSave('err','保存容量の上限です。不要な試合を削除してください（この端末には保存中）');return;}
+  if(c==='resource_exhausted'){setTimeout(retry,4000);return;}
+  store.ok=false;
+  if(c==='invalid_argument'){store.mode='limited';setSave('','このブラウザに保存');return;}
+  setSave('err','アカウントに保存できません（このブラウザにだけ保存中）');
+}
+async function initCloud(){
+  if(!(window.claude&&typeof window.claude.use==='function')){setSave('','この端末に保存');return;}
+  setSave('saving','アカウントに接続中…');
+  let user=null,db=null;
+  try{[user,db]=await Promise.all([window.claude.use('user'),window.claude.use('db')]);}catch(e){}
+  if(!db||!user){setSave('','この端末に保存');return;}
+  let id=null;try{id=await user.id();}catch(e){}
+  if(!id){setSave('','この端末に保存');return;}
+  let canW=null;try{canW=await user.can('data.write');}catch(e){}
+  if(canW===false){store.mode='limited';setSave('','このブラウザに保存');return;}
+  store.db=db;store.uid=id;
+  const to=setTimeout(()=>setSave('err','アカウントに接続できません（この端末に保存中）'),10000);
+  let snap;
+  try{snap=await userCol().get();}catch(e){clearTimeout(to);setSave('err','アカウントに接続できません（この端末に保存中）');return;}
+  clearTimeout(to);
+  store.ok=true;
+  const cloud=new Map();let cset=null;
+  for(const d of snap.docs){const v=d.data();if(!v)continue;
+    if(v.kind==='round'){try{const r=normRound(JSON.parse(v.json));if(r)cloud.set(d.id,r);}catch(e){}}
+    else if(v.kind==='settings'){try{cset=JSON.parse(v.json);}catch(e){}}}
+  const local=S.rounds.filter(r=>!(r.sample&&!r.touched));
+  const ids=new Set([...cloud.keys(),...local.map(r=>r.id)]);
+  const merged=[];const upload=[];
+  for(const rid of ids){const c=cloud.get(rid),l=local.find(x=>x.id===rid);
+    if(c&&l){if(l.updatedAt>c.updatedAt){merged.push(l);upload.push(rid);}else merged.push(c);}
+    else if(l){merged.push(l);upload.push(rid);}else merged.push(c);}
+  if(merged.length){
+    const keepEdit=ui.edit;
+    S.rounds=merged;
+    if(cset){if(cset.settings)Object.assign(S.settings,cset.settings);if(cset.curId&&merged.some(x=>x.id===cset.curId)&&!keepEdit)S.curId=cset.curId;}
+    if(!S.rounds.some(x=>x.id===S.curId))S.curId=S.rounds.slice().sort((a,b)=>b.updatedAt-a.updatedAt)[0].id;
+    if(!card(keepEdit)){ui.edit=null;}
+    applySettings();timerReset();saveLocal();render();
+  }
+  for(const rid of upload)cloudWrite(rid);
+  setSave('cloud','アカウントに保存');
+}
+function flush(){for(const id of Object.keys(store.tm)){clearTimeout(store.tm[id]);cloudWrite(id);}saveLocal();}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flush();});
+window.addEventListener('pagehide',flush);
+
+/* ================= 起動 ================= */
+loadLocal();
+if(!S.rounds.length){const s=sampleRound();S.rounds=[s];S.curId=s.id;}
+applySettings();timerReset();render();
+initCloud();
+(async()=>{try{if(window.claude&&typeof window.claude.use==='function')dl=await window.claude.use('downloads');}catch(e){dl=null;}})();
+</script>
+</body>
+</html>
